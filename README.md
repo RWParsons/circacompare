@@ -4,13 +4,13 @@ This work is published here (to be hyperlinked) and can be cited as: (citation t
 
 # Installation
 
-Firstly, install devtools if you have not already
+If you have not done so already, install `devtools` using the following code:
 
 ```
 install.packages("devtools")
 ```
 
-Then, install circacompare directly
+Then, install circacompare directly using the following code:
 ```
 devtools::install_github("RWParsons/circacompare")
 ```
