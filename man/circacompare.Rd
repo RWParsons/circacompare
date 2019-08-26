@@ -1,12 +1,12 @@
-\name{hello}
-\alias{hello}
-\title{Hello, World!}
+\name{circacompare}
+\alias{circacompare}
+\title{circacompare}
 \usage{
-hello()
+circacompare()
 }
 \description{
-Prints 'Hello, world!'.
+Compares circadian datasets
 }
 \examples{
-hello()
+circacompare()
 }
