@@ -1,8 +1,8 @@
-\name{plot_crayons}
-\alias{plot_crayons}
+\name{circacompare}
+\alias{circacompare}
 \title{Illustration of crayon colors}
 \usage{
-plot_crayons(method2order = c("hsv", "cluster"), cex = 0.6,
+circacompare(method2order = c("hsv", "cluster"), cex = 0.6,
              mar = rep(0.1, 4))
 }
 \arguments{
@@ -19,5 +19,5 @@ None
 Creates a plot of the crayon colors in \code{\link{brocolors}}
 }
 \examples{
-plot_crayons()
+circacompare()
 }
