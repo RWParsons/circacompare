@@ -47,14 +47,25 @@ circacompare <- function(x,
                           period = 24,
                           alpha_threshold = 0.05,
                           timeout_n = 10000){
+  
+  if(!"ggplot2" %in% installed.packages()[, "Package"]){
+    return(message("Please install 'ggplot2'"))
+  }
+  
+
+  
   library(ggplot2)
   colnames(x)[agrep(col_group, colnames(x))] <- "group"
-  input_fail <- ifelse(length(levels(as.factor(x$group)))!=2, TRUE, FALSE)
+
+  if(length(levels(as.factor(x$group)))!=2){
+    return(message("Your grouping variable had more or less than 2 levels! \nThis function is used to compare two groups of data. \nTo avoid me having to guess, please send data with only two possible values in your grouping variable to this function."))
+  }
+  
   group_1_text <- levels(as.factor(x$group))[1]
   group_2_text <- levels(as.factor(x$group))[2]
   colnames(x)[agrep(col_time, colnames(x))] <- "time"
   colnames(x)[agrep(col_outcome, colnames(x))] <- "measure"
-
+  
   x$time_r <- (x$time/24)*2*pi*(24/period)
   x$x_group <- ifelse(x$group == group_1_text, 0, 1)
 
@@ -70,24 +81,24 @@ circacompare <- function(x,
 
   while(g1_success !=1){
     g1_alpha_start <- runif(1)*1000
-    g1_gamma_start <- runif(1)*6.15 - 3.15
-    fit.nls_group_1 <- nls(measure~k + alpha*cos(time_r-gamma),
+    g1_phi_start <- runif(1)*6.15 - 3.15
+    fit.nls_group_1 <- nls(measure~k + alpha*cos(time_r-phi),
                            data = dat_group_1,
-                           start = list(k=1,alpha=g1_alpha_start,gamma=g1_gamma_start))
+                           start = list(k=1,alpha=g1_alpha_start,phi=g1_phi_start))
     g1_alpha_out <- summary(fit.nls_group_1)$coef[2,1]
     g1_alpha_p <- summary(fit.nls_group_1)$coef[2,4]
-    g1_gamma_out <- summary(fit.nls_group_1)$coef[3,1]
+    g1_phi_out <- summary(fit.nls_group_1)$coef[3,1]
     g1_success <- ifelse(g1_alpha_out > 0,1,0)
   }
   while(g2_success !=1){
     g2_alpha_start <- runif(1)*1000
-    g2_gamma_start <- runif(1)*6.15 - 3.15
-    fit.nls_group_2 <- nls(measure~k + alpha*cos(time_r-gamma),
+    g2_phi_start <- runif(1)*6.15 - 3.15
+    fit.nls_group_2 <- nls(measure~k + alpha*cos(time_r-phi),
                            data = dat_group_2,
-                           start = list(k=1,alpha=g2_alpha_start,gamma=g2_gamma_start))
+                           start = list(k=1,alpha=g2_alpha_start,phi=g2_phi_start))
     g2_alpha_out <- summary(fit.nls_group_2)$coef[2,1]
     g2_alpha_p <- summary(fit.nls_group_2)$coef[2,4]
-    g2_gamma_out <- summary(fit.nls_group_2)$coef[3,1]
+    g2_phi_out <- summary(fit.nls_group_2)$coef[3,1]
     g2_success <- ifelse(g2_alpha_out > 0,1,0)
   }
 
@@ -99,11 +110,11 @@ circacompare <- function(x,
     while(comparison_model_success == 0 & comparison_model_timeout == FALSE){
       alpha_in <- g1_alpha_out
       alpha1_in <- runif(1)*10 -5
-      gamma_in <- g1_gamma_out
-      gamma1_in <- runif(1)*2*pi - pi
-      fit.nls <- nls(measure~k+k1*x_group+(alpha+alpha1*x_group)*cos(time_r-(gamma+gamma1*x_group)),
+      phi_in <- g1_phi_out
+      phi1_in <- runif(1)*2*pi - pi
+      fit.nls <- nls(measure~k+k1*x_group+(alpha+alpha1*x_group)*cos(time_r-(phi+phi1*x_group)),
                      data = x,
-                     start = list(k=1, k1=0, alpha=alpha_in, alpha1=alpha1_in, gamma=gamma_in, gamma1=gamma1_in),
+                     start = list(k=1, k1=0, alpha=alpha_in, alpha1=alpha1_in, phi=phi_in, phi1=phi1_in),
                      nls.control(maxiter = 100, minFactor = 1/10000, warnOnly = TRUE))
 
       k_out <- coef(fit.nls)[1]
@@ -115,18 +126,22 @@ circacompare <- function(x,
       alpha1_out <- coef(fit.nls)[4]
       alpha1_out_p <- (summary(fit.nls)$coef)[4,4]
 
-      gamma_out <- coef(fit.nls)[5]
-      gamma1_out <- coef(fit.nls)[6]
-      gamma1_out_p <- (summary(fit.nls)$coef)[6,4]
+      phi_out <- coef(fit.nls)[5]
+      phi1_out <- coef(fit.nls)[6]
+      phi1_out_p <- (summary(fit.nls)$coef)[6,4]
 
-      comparison_model_success <- ifelse(alpha_out>0 & (alpha_out + alpha1_out) > 0 & gamma1_out <pi & gamma1_out >-pi, 1, 0)
+      comparison_model_success <- ifelse(alpha_out>0 & (alpha_out + alpha1_out) > 0 & phi1_out <pi & phi1_out >-pi, 1, 0)
       n <- n + 1
       comparison_model_timeout <- ifelse(n>timeout_n, TRUE, FALSE)
     }
+    
+    if(comparison_model_timeout == TRUE){
+      return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me via details on github."))
+      }
     #loop curve fitting process (all data) until outputs are appropriate, or until looped more times than timeout_n
     if(comparison_model_timeout == FALSE){
-      eq_1 <- function(time_r){k_out + alpha_out*cos(time_r - gamma_out)}
-      eq_2 <- function(time_r){k_out + k1_out + (alpha_out + alpha1_out)*cos(time_r - (gamma_out + gamma1_out))}
+      eq_1 <- function(time_r){k_out + alpha_out*cos(time_r - phi_out)}
+      eq_2 <- function(time_r){k_out + k1_out + (alpha_out + alpha1_out)*cos(time_r - (phi_out + phi1_out))}
 
       fig_out <- ggplot2::ggplot(x, aes(time_r, measure)) +
         stat_function(fun = eq_1, colour = "deep sky blue", size=1) +
@@ -142,22 +157,22 @@ circacompare <- function(x,
     }#if the nls was successful, create a graph to plot the data as well as curves of best fit, 'fig_out'
   }
   if(both_groups_rhythmic==TRUE & comparison_model_success==1){
-    if(gamma_out > pi){
-      while(gamma_out > pi){
-        gamma_out <- gamma_out - 2*pi
+    if(phi_out > pi){
+      while(phi_out > pi){
+        phi_out <- phi_out - 2*pi
       }
     }
-    if(gamma_out < -pi){
-      while(gamma_out < -pi){
-        gamma_out <- gamma_out + 2*pi
+    if(phi_out < -pi){
+      while(phi_out < -pi){
+        phi_out <- phi_out + 2*pi
       }
-    }#adjust gamma_out so that -pi < gamma_out < pi
+    }#adjust phi_out so that -pi < phi_out < pi
     baseline_diff_abs <- k1_out
     baseline_diff_pc <- ((k_out + k1_out)/k_out)*100 - 100
     amplitude_diff_abs <- alpha1_out
     amplitude_diff_pc <-  ((alpha_out+alpha1_out)/alpha_out)*100 - 100
-    g1_peak_time <- gamma_out*24/(2*pi)
-    g2_peak_time <- (gamma_out+gamma1_out)*24/(2*pi)
+    g1_peak_time <- phi_out*24/(2*pi)
+    g2_peak_time <- (phi_out+phi1_out)*24/(2*pi)
     while(g1_peak_time >24 | g1_peak_time < 0){
       if(g1_peak_time >24){
         g1_peak_time <- g1_peak_time - 24
@@ -174,7 +189,7 @@ circacompare <- function(x,
         g2_peak_time <- g2_peak_time + 24
       }
     }
-    peak_time_diff <- gamma1_out*24/(2*pi)
+    peak_time_diff <- phi1_out*24/(2*pi)
   }
 
   if(comparison_model_timeout == TRUE | both_groups_rhythmic==FALSE){
@@ -185,9 +200,9 @@ circacompare <- function(x,
     alpha_out <- NA
     alpha1_out <- NA
     alpha1_out_p <- NA
-    gamma_out <- NA
-    gamma1_out <- NA
-    gamma1_out_p <- NA
+    phi_out <- NA
+    phi1_out <- NA
+    phi1_out_p <- NA
     baseline_diff_abs <- NA
     baseline_diff_pc <- NA
     amplitude_diff_abs <- NA
@@ -201,17 +216,34 @@ circacompare <- function(x,
       scale_colour_manual(breaks = c(group_1_text, group_2_text),
                           values = c("deep sky blue", "red"))
   }
-  output_parms <- data.frame(parameter = c("both_groups_rhythmic", "g1_rhythmicity_p", "g2_rhythmicity_p", "g1_MESOR_estimate",
-                                           "MESOR_difference_estimate", "MESOR_difference_p", "g1_amplitude_estimate", "amplitude_difference_estimate",
-                                           "amplitude_difference_p", "g1_peak_time", "phase_difference_estimate", "phase_difference_p"),
-                             value = c(both_groups_rhythmic, g1_alpha_p, g2_alpha_p, k_out, k1_out, k1_out_p, alpha_out, alpha1_out, alpha1_out_p,
-                                       g1_peak_time, peak_time_diff, gamma1_out_p))
+  output_parms <- data.frame(parameter = c("both_groups_rhythmic", 
+                                           paste(group_1_text, "_rhythmicity_p", sep = ""), 
+                                           paste(group_2_text, "_rhythmicity_p", sep = ""),
+                                           paste(group_1_text, "_MESOR_estimate", sep = ""),
+                                           "MESOR_difference_estimate", 
+                                           "MESOR_difference_p", 
+                                           paste(group_1_text, "_amplitude_estimate", sep = ""), 
+                                           "amplitude_difference_estimate",
+                                           "amplitude_difference_p", 
+                                           paste(group_1_text, "_peak_time", sep = ""), 
+                                           "phase_difference_estimate", 
+                                           "phase_difference_p"),
+                             value = c(both_groups_rhythmic, g1_alpha_p, g2_alpha_p, k_out, k1_out, 
+                                       k1_out_p, alpha_out, alpha1_out, alpha1_out_p,
+                                       g1_peak_time, peak_time_diff, phi1_out_p))
 
 
   if(exists("fig_out")){
     return(list(fig_out, output_parms))
   }
-  if(comparison_model_timeout == TRUE | both_groups_rhythmic==FALSE){
-    return(output_parms)
+  if(both_groups_rhythmic==FALSE){
+    if(g1_rhythmic == FALSE & g2_rhythmic == FALSE){
+      return(message("Both groups of data were arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
+    }
+    if(g1_rhythmic == FALSE){
+      return(message(group_1_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
+    }else{
+      return(message(group_2_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
+    }
   }
 }
