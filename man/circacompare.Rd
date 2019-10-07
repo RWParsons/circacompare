@@ -1,6 +1,6 @@
 \name{circacompare}
 \alias{circacompare}
-\title{'statistically compares two groups of circadian data'}
+\title{Statistically compares two groups of circadian data}
 \usage{
 circacompare(x, col_time, col_group, col_outcome, period = 24, alpha_threshold = 0.05, timeout_n = 10000)
 }
