@@ -30,9 +30,9 @@ df <- make_data(hours_diff = 6)
 # call circacompare.
 out <- circacompare(x = df, col_time = "time", col_group = "group", col_outcome = "measure")
 
-# View the graph.
+# view the graph.
 out[[1]]
 
-# View the results.
+# view the results.
 out[[2]]
 }
