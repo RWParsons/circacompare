@@ -2,7 +2,8 @@
 \alias{circacompare}
 \title{Statistically compares two groups of circadian data}
 \usage{
-circacompare(x, col_time, col_group, col_outcome, period = 24, alpha_threshold = 0.05, timeout_n = 10000)
+circacompare(x, col_time, col_group, col_outcome,
+             period = 24, alpha_threshold = 0.05, timeout_n = 10000)
 }
 \arguments{
 \item{x}{A data.frame containing circadian data of two groups.}
@@ -29,9 +30,9 @@ df <- make_data(hours_diff = 6)
 # call circacompare.
 out <- circacompare(x = df, col_time = "time", col_group = "group", col_outcome = "measure")
 
-# View the output graph.
+# View the graph.
 out[[1]]
 
-# View the results
+# View the results.
 out[[2]]
 }
