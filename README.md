@@ -1,6 +1,7 @@
 # circacompare
 `circacompare` is an R package that allows for the statistical analyses and comparison of two circadian rhythms.
-This work is published here (to be hyperlinked) and can be cited as: (citation to be added)
+This work is published here (https://academic.oup.com/bioinformatics/article-abstract/doi/10.1093/bioinformatics/btz730/5582266) and can be cited as: 
+`Rex Parsons, Richard Parsons, Nicholas Garner, Henrik Oster, Oliver Rawashdeh, CircaCompare: A method to estimate and statistically support differences in mesor, amplitude, and phase, between circadian rhythms, Bioinformatics, https://doi.org/10.1093/bioinformatics/btz730`
 
 # Installation
 
