@@ -132,7 +132,7 @@ circacompare <- function(x,
                             values = c("deep sky blue", "red")) +
         xlab("time (hours)")
       
-    #if the nls was successful, create a graph to plot the data as well as curves of best fit, 'fig_out'
+    }#if the nls was successful, create a graph to plot the data as well as curves of best fit, 'fig_out'
   }
   if(both_groups_rhythmic==TRUE & comparison_model_success==1){
     if(phi_out > pi){
