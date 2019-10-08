@@ -22,22 +22,22 @@ make_data <- function(hours_diff){
 }
 
 circacompare <- function(x,
-                          col_time,
-                          col_group,
-                          col_outcome,
-                          period = 24,
-                          alpha_threshold = 0.05,
-                          timeout_n = 10000){
+                         col_time,
+                         col_group,
+                         col_outcome,
+                         period = 24,
+                         alpha_threshold = 0.05,
+                         timeout_n = 10000){
   
   if(!"ggplot2" %in% installed.packages()[, "Package"]){
     return(message("Please install 'ggplot2'"))
   }
   
-
+  
   
   library(ggplot2)
   colnames(x)[agrep(col_group, colnames(x))] <- "group"
-
+  
   if(length(levels(as.factor(x$group)))!=2){
     return(message("Your grouping variable had more or less than 2 levels! \nThis function is used to compare two groups of data. \nTo avoid me having to guess, please send data with only two possible values in your grouping variable to this function."))
   }
@@ -49,7 +49,7 @@ circacompare <- function(x,
   
   x$time_r <- (x$time/24)*2*pi*(24/period)
   x$x_group <- ifelse(x$group == group_1_text, 0, 1)
-
+  
   comparison_model_success <- 0
   comparison_model_timeout <- FALSE
   g1_success <- 0
@@ -59,7 +59,7 @@ circacompare <- function(x,
   n <- 0
   dat_group_1 <- x[x$group == group_1_text,]
   dat_group_2 <- x[x$group == group_2_text,]
-
+  
   while(g1_success !=1){
     g1_alpha_start <- runif(1)*1000
     g1_phi_start <- runif(1)*6.15 - 3.15
@@ -82,11 +82,11 @@ circacompare <- function(x,
     g2_phi_out <- summary(fit.nls_group_2)$coef[3,1]
     g2_success <- ifelse(g2_alpha_out > 0,1,0)
   }
-
+  
   g1_rhythmic <- ifelse(g1_alpha_p < alpha_threshold, TRUE, FALSE)
   g2_rhythmic <- ifelse(g2_alpha_p < alpha_threshold, TRUE, FALSE)
   both_groups_rhythmic <- ifelse(g1_rhythmic ==TRUE & g2_rhythmic==TRUE, TRUE, FALSE)
-
+  
   if(both_groups_rhythmic == TRUE){
     while(comparison_model_success == 0 & comparison_model_timeout == FALSE){
       alpha_in <- g1_alpha_out
@@ -97,20 +97,20 @@ circacompare <- function(x,
                      data = x,
                      start = list(k=1, k1=0, alpha=alpha_in, alpha1=alpha1_in, phi=phi_in, phi1=phi1_in),
                      nls.control(maxiter = 100, minFactor = 1/10000, warnOnly = TRUE))
-
+      
       k_out <- coef(fit.nls)[1]
       k1_out <- coef(fit.nls)[2]
       k_out_p <- (summary(fit.nls)$coef)[1,4]
       k1_out_p <- (summary(fit.nls)$coef)[2,4]
-
+      
       alpha_out <- coef(fit.nls)[3]
       alpha1_out <- coef(fit.nls)[4]
       alpha1_out_p <- (summary(fit.nls)$coef)[4,4]
-
+      
       phi_out <- coef(fit.nls)[5]
       phi1_out <- coef(fit.nls)[6]
       phi1_out_p <- (summary(fit.nls)$coef)[6,4]
-
+      
       comparison_model_success <- ifelse(alpha_out>0 & (alpha_out + alpha1_out) > 0 & phi1_out <pi & phi1_out >-pi, 1, 0)
       n <- n + 1
       comparison_model_timeout <- ifelse(n>timeout_n, TRUE, FALSE)
@@ -118,7 +118,7 @@ circacompare <- function(x,
     
     if(comparison_model_timeout == TRUE){
       return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
-      }
+    }
     #loop curve fitting process (all data) until outputs are appropriate, or until looped more times than timeout_n
     if(comparison_model_timeout == FALSE){
       eq_1 <- function(time){k_out + alpha_out*cos((2*pi/period)*time - phi_out)}
@@ -169,7 +169,7 @@ circacompare <- function(x,
     }
     peak_time_diff <- phi1_out*24/(2*pi)
   }
-
+  
   if(comparison_model_timeout == TRUE | both_groups_rhythmic==FALSE){
     k_out <- NA
     k_out_p <- NA
@@ -188,7 +188,7 @@ circacompare <- function(x,
     g1_peak_time <- NA
     g2_peak_time <- NA
     peak_time_diff <- NA
-
+    
     fig_out <- ggplot2::ggplot(x, aes(time, measure)) +
       geom_point(aes(colour = group))+
       scale_colour_manual(breaks = c(group_1_text, group_2_text),
@@ -209,8 +209,8 @@ circacompare <- function(x,
                              value = c(both_groups_rhythmic, g1_alpha_p, g2_alpha_p, k_out, k1_out, 
                                        k1_out_p, alpha_out, alpha1_out, alpha1_out_p,
                                        g1_peak_time, peak_time_diff, phi1_out_p))
-
-
+  
+  
   if(exists("fig_out")){
     return(list(fig_out, output_parms))
   }
@@ -225,3 +225,4 @@ circacompare <- function(x,
     }
   }
 }
+
