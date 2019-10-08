@@ -21,8 +21,7 @@ circacompare(x, col_time, col_group, col_outcome,
 \item{timeout_n}{A value which controls the upper limit for the nls fitting attempts.}
 }
 \description{
-Takes circadian data of two groups in a single dataset and tests each group for rhythmicity. If both groups are rhythmic, the two are compared. Statistical and estimated differences are given for mesor, amplitude and phase. Acommpanying the summary results, a ggplot object is also returned.
-The data which is passed to \code{circacompare} does not necessarily have to include times only within hours 0 to 24.  However, the default range of the x-axis in the ggplot graph which is returned is from 0 to 24.  This can be manipulated by adding a \code{scale_x_continuous} layer ontop of the returned ggplot object.
+Takes circadian data of two groups in a single dataset and tests each group for rhythmicity. If both groups are rhythmic, the two are compared. Statistical and estimated differences are given for mesor, amplitude and phase. Acommpanying the summary results, a ggplot object is also returned.\nThe data which is passed to \code{circacompare} does not necessarily have to include times only within hours 0 to 24.  However, the default range of the x-axis in the ggplot graph which is returned is from 0 to 24.  This can be manipulated by adding a \code{scale_x_continuous} layer ontop of the returned ggplot object.
 }
 \examples{
 # create an example data frame with a phase shift between groups of 6 hours.
