@@ -121,21 +121,18 @@ circacompare <- function(x,
       }
     #loop curve fitting process (all data) until outputs are appropriate, or until looped more times than timeout_n
     if(comparison_model_timeout == FALSE){
-      eq_1 <- function(time_r){k_out + alpha_out*cos(time_r - phi_out)}
-      eq_2 <- function(time_r){k_out + k1_out + (alpha_out + alpha1_out)*cos(time_r - (phi_out + phi1_out))}
-
-      fig_out <- ggplot2::ggplot(x, aes(time_r, measure)) +
+      eq_1 <- function(time){k_out + alpha_out*cos((2*pi/period)*time - phi_out)}
+      eq_2 <- function(time){k_out + k1_out + (alpha_out + alpha1_out)*cos((2*pi/period)*time - (phi_out + phi1_out))}
+      
+      fig_out <- ggplot2::ggplot(x, aes(time, measure)) +
         stat_function(fun = eq_1, colour = "deep sky blue", size=1) +
         stat_function(fun = eq_2, colour = "red", size=1) +
-        geom_point(aes(colour = group)) + scale_x_continuous(limits = c(0,6.4),
-                                                             breaks = c(0,1.57,3.14,4.71,6.28),
-                                                             labels = c(0, (period/4)*1, (period/4)*2, (period/4)*3, (period/4)*4))+
+        geom_point(aes(colour = group)) + 
         scale_colour_manual(breaks = c(group_1_text, group_2_text),
                             values = c("deep sky blue", "red")) +
         xlab("time (hours)")
-
-
-    }#if the nls was successful, create a graph to plot the data as well as curves of best fit, 'fig_out'
+      
+    #if the nls was successful, create a graph to plot the data as well as curves of best fit, 'fig_out'
   }
   if(both_groups_rhythmic==TRUE & comparison_model_success==1){
     if(phi_out > pi){
