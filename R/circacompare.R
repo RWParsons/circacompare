@@ -117,7 +117,7 @@ circacompare <- function(x,
     }
     
     if(comparison_model_timeout == TRUE){
-      return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me via details on github."))
+      return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
       }
     #loop curve fitting process (all data) until outputs are appropriate, or until looped more times than timeout_n
     if(comparison_model_timeout == FALSE){
