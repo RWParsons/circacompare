@@ -21,3 +21,5 @@ devtools::install_github("RWParsons/circacompare")
 # Help
 
 Once loaded into R, load the documentation using `?circacompare`.  As per the example, you can use the other function, `make_data`, to generate example data appropriate for use in the `circacompare` function.
+
+If you're having further troubles or suggestions for improvement, please create an issue or email me (rex.parsons94@gmail.com).
