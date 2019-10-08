@@ -1,13 +1,14 @@
 Package: circacompare
-Type: Package
-Title: What the Package Does (Title Case)
+Title: Analyses of circadian data
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Authors@R: as.person(c(
+    "Rex Parsons <Rex.Parsons94@gmail.com> [aut, cre]", 
+    "Oliver Rawashdeh <o.rawashdeh@uq.edu.au> [ctb]"))
+Maintainer: The package maintainer <Rex.Parsons94@gmail.com>
+Description: Uses non-linear regression to statistically compare two circadian rhythms.
+    Groups are only compared if both are rhythmic (amplitude is non-zero).
+    Performs analyses regarding mesor, phase, and amplitude, reporting on estimates and statistical differences, per group, for each.
 Encoding: UTF-8
 LazyData: true
 Imports:
-    ggplot2
+    ggplot2 (>= 2.2.1)
