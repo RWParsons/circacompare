@@ -131,8 +131,8 @@ circacompare <- function(x,
         scale_colour_manual(breaks = c(group_1_text, group_2_text),
                             values = c("deep sky blue", "red")) +
         xlab("time (hours)") +
-        xlim(min(floor(df$time/period) * period),
-             max(ceiling(df$time/period) * period))
+        xlim(min(floor(x$time/period) * period),
+             max(ceiling(x$time/period) * period))
       
     }#if the nls was successful, create a graph to plot the data as well as curves of best fit, 'fig_out'
   }
