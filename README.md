@@ -27,9 +27,9 @@ If you're having further troubles or suggestions for improvement, please create 
 # ShinyR application
 
 An implementation of the `circacompare` program is available as a Shiny app here: https://rwparsons.shinyapps.io/circacompare/
-The data uploaded should be in csv format. The columns in the file are required:
+The data uploaded should be in csv format. The file which you upload ought to have columns for:
 1. a time variable (which should be numeric and in hours)
 2. a grouping variable (which can be of any format but must have only two possible values)
-3. a outcome variable (which should be numeric)
+3. an outcome variable (which should be numeric)
 
 Upload your csv file and select the respective columns from the dropdown menu.  Click 'run' to conduct the comparison.
