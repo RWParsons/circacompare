@@ -38,6 +38,6 @@ out[[2]]
   
 # view the nls object summary and confidence intervals for parameters.  To understand the parameters in this object, it would be useful to read the circacompare publication (https://doi.org/10.1093/bioinformatics/btz730)
 summary(out[[3]])
-confint(out[[3]])
+nlstools::confint2(out[[3]])
 
 }
