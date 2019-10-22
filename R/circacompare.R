@@ -87,6 +87,17 @@ circacompare <- function(x,
   g2_rhythmic <- ifelse(g2_alpha_p < alpha_threshold, TRUE, FALSE)
   both_groups_rhythmic <- ifelse(g1_rhythmic ==TRUE & g2_rhythmic==TRUE, TRUE, FALSE)
   
+  if(both_groups_rhythmic==FALSE){
+    if(g1_rhythmic == FALSE & g2_rhythmic == FALSE){
+      return(message("Both groups of data were arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
+    }
+    if(g1_rhythmic == FALSE){
+      return(message(group_1_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
+    }else{
+      return(message(group_2_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
+    }
+  }
+  
   if(both_groups_rhythmic == TRUE){
     while(comparison_model_success == 0 & comparison_model_timeout == FALSE){
       alpha_in <- g1_alpha_out
@@ -172,30 +183,6 @@ circacompare <- function(x,
     peak_time_diff <- phi1_out*24/(2*pi)
   }
   
-  if(comparison_model_timeout == TRUE | both_groups_rhythmic==FALSE){
-    k_out <- NA
-    k_out_p <- NA
-    k1_out <- NA
-    k1_out_p <- NA
-    alpha_out <- NA
-    alpha1_out <- NA
-    alpha1_out_p <- NA
-    phi_out <- NA
-    phi1_out <- NA
-    phi1_out_p <- NA
-    baseline_diff_abs <- NA
-    baseline_diff_pc <- NA
-    amplitude_diff_abs <- NA
-    amplitude_diff_pc <- NA
-    g1_peak_time <- NA
-    g2_peak_time <- NA
-    peak_time_diff <- NA
-    
-    fig_out <- ggplot2::ggplot(x, aes(time, measure)) +
-      geom_point(aes(colour = group))+
-      scale_colour_manual(breaks = c(group_1_text, group_2_text),
-                          values = c("deep sky blue", "red"))
-  }
   output_parms <- data.frame(parameter = c("Both groups were rhythmic", 
                                            paste("Presence of rhythmicity (p-value) for ", group_1_text, sep = ""), 
                                            paste("Presence of rhythmicity (p-value) for ", group_2_text, sep = ""),
@@ -217,17 +204,6 @@ circacompare <- function(x,
   
   
   if(exists("fig_out")){
-    return(list(fig_out, output_parms))
-  }
-  if(both_groups_rhythmic==FALSE){
-    if(g1_rhythmic == FALSE & g2_rhythmic == FALSE){
-      return(message("Both groups of data were arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
-    }
-    if(g1_rhythmic == FALSE){
-      return(message(group_1_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
-    }else{
-      return(message(group_2_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
-    }
+    return(list(fig_out, output_parms, fit.nls))
   }
 }
-
