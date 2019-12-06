@@ -33,8 +33,6 @@ circacompare <- function(x,
     return(message("Please install 'ggplot2'"))
   }
   
-  
-  
   library(ggplot2)
   colnames(x)[agrep(col_group, colnames(x))] <- "group"
   
@@ -61,26 +59,53 @@ circacompare <- function(x,
   dat_group_2 <- x[x$group == group_2_text,]
   
   while(g1_success !=1){
-    g1_alpha_start <- runif(1)*1000
+    g1_alpha_start <- (max(dat_group_1$measure, na.rm = TRUE) - min(dat_group_1$measure, na.rm = TRUE)) * runif(1)
     g1_phi_start <- runif(1)*6.15 - 3.15
-    fit.nls_group_1 <- nls(measure~k + alpha*cos(time_r-phi),
-                           data = dat_group_1,
-                           start = list(k=1,alpha=g1_alpha_start,phi=g1_phi_start))
-    g1_alpha_out <- summary(fit.nls_group_1)$coef[2,1]
-    g1_alpha_p <- summary(fit.nls_group_1)$coef[2,4]
-    g1_phi_out <- summary(fit.nls_group_1)$coef[3,1]
-    g1_success <- ifelse(g1_alpha_out > 0,1,0)
+    g1_k_start <- mean(dat_group_1$measure, na.rm = TRUE)*2*runif(1)
+    
+    fit.nls_group_1 <- try({nls(measure~k + alpha*cos(time_r-phi),
+                                data = dat_group_1,
+                                start = list(k=g1_k_start,alpha=g1_alpha_start,phi=g1_phi_start))},
+                           silent = TRUE)
+    if(class(fit.nls_group_1) == "try-error"){
+      n <- n + 1
+    }
+    else{
+      g1_k_out <- summary(fit.nls_group_1)$coef[1,1]
+      g1_alpha_out <- summary(fit.nls_group_1)$coef[2,1]
+      g1_alpha_p <- summary(fit.nls_group_1)$coef[2,4]
+      g1_phi_out <- summary(fit.nls_group_1)$coef[3,1]
+      g1_success <- ifelse(g1_alpha_out > 0,1,0)
+      n <- n + 1
+    }
+    if(n >= timeout_n){
+      return(message("Failed to converge group 1 data prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
+    }
   }
+  n <- 0
   while(g2_success !=1){
-    g2_alpha_start <- runif(1)*1000
+    g2_alpha_start <- (max(dat_group_2$measure, na.rm = TRUE) - min(dat_group_2$measure, na.rm = TRUE)) * runif(1)
     g2_phi_start <- runif(1)*6.15 - 3.15
-    fit.nls_group_2 <- nls(measure~k + alpha*cos(time_r-phi),
-                           data = dat_group_2,
-                           start = list(k=1,alpha=g2_alpha_start,phi=g2_phi_start))
-    g2_alpha_out <- summary(fit.nls_group_2)$coef[2,1]
-    g2_alpha_p <- summary(fit.nls_group_2)$coef[2,4]
-    g2_phi_out <- summary(fit.nls_group_2)$coef[3,1]
-    g2_success <- ifelse(g2_alpha_out > 0,1,0)
+    g2_k_start <- mean(dat_group_2$measure, na.rm = TRUE)*2*runif(1)
+    
+    fit.nls_group_2 <- try({nls(measure~k + alpha*cos(time_r-phi),
+                                data = dat_group_2,
+                                start = list(k=g2_k_start,alpha=g2_alpha_start,phi=g2_phi_start))},
+                           silent = TRUE)
+    if(class(fit.nls_group_2) == "try-error"){
+      n <- n + 1
+    }
+    else{
+      g2_k_out <- summary(fit.nls_group_2)$coef[1,1]
+      g2_alpha_out <- summary(fit.nls_group_2)$coef[2,1]
+      g2_alpha_p <- summary(fit.nls_group_2)$coef[2,4]
+      g2_phi_out <- summary(fit.nls_group_2)$coef[3,1]
+      g2_success <- ifelse(g2_alpha_out > 0,1,0)
+      n <- n + 1
+    }
+    if(n >= timeout_n){
+      return(message("Failed to converge group 2 data prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
+    }
   }
   
   g1_rhythmic <- ifelse(g1_alpha_p < alpha_threshold, TRUE, FALSE)
@@ -97,34 +122,43 @@ circacompare <- function(x,
       return(message(group_2_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
     }
   }
-  
+  n <- 0
   if(both_groups_rhythmic == TRUE){
     while(comparison_model_success == 0 & comparison_model_timeout == FALSE){
-      alpha_in <- g1_alpha_out
-      alpha1_in <- runif(1)*10 -5
-      phi_in <- g1_phi_out
+      alpha_in <- g1_alpha_out*2*runif(1)
+      alpha1_in <- (g2_alpha_out - g1_alpha_out)*2*runif(1)
+      phi_in <- g1_phi_out*2*runif(1)
       phi1_in <- runif(1)*2*pi - pi
-      fit.nls <- nls(measure~k+k1*x_group+(alpha+alpha1*x_group)*cos(time_r-(phi+phi1*x_group)),
+      k_in <- g1_k_out*2*runif(1)
+      k1_in <- (g2_k_out - g1_k_out)*2*runif(1)
+      
+      fit.nls <- try({nls(measure~k+k1*x_group+(alpha+alpha1*x_group)*cos(time_r-(phi+phi1*x_group)),
                      data = x,
-                     start = list(k=1, k1=0, alpha=alpha_in, alpha1=alpha1_in, phi=phi_in, phi1=phi1_in),
-                     nls.control(maxiter = 100, minFactor = 1/10000, warnOnly = TRUE))
+                     start = list(k=k_in, k1=k1_in, alpha=alpha_in, alpha1=alpha1_in, phi=phi_in, phi1=phi1_in),
+                     nls.control(maxiter = 100, minFactor = 1/10000#, warnOnly = TRUE
+                                 ))},
+                     silent = TRUE) 
       
-      k_out <- coef(fit.nls)[1]
-      k1_out <- coef(fit.nls)[2]
-      k_out_p <- (summary(fit.nls)$coef)[1,4]
-      k1_out_p <- (summary(fit.nls)$coef)[2,4]
-      
-      alpha_out <- coef(fit.nls)[3]
-      alpha1_out <- coef(fit.nls)[4]
-      alpha1_out_p <- (summary(fit.nls)$coef)[4,4]
-      
-      phi_out <- coef(fit.nls)[5]
-      phi1_out <- coef(fit.nls)[6]
-      phi1_out_p <- (summary(fit.nls)$coef)[6,4]
-      
-      comparison_model_success <- ifelse(alpha_out>0 & (alpha_out + alpha1_out) > 0 & phi1_out <pi & phi1_out >-pi, 1, 0)
-      n <- n + 1
-      comparison_model_timeout <- ifelse(n>timeout_n, TRUE, FALSE)
+      if (class(fit.nls) == "try-error") {
+         n <- n + 1
+       }
+      else{
+        k_out <- coef(fit.nls)[1]
+        k1_out <- coef(fit.nls)[2]
+        k_out_p <- (summary(fit.nls)$coef)[1,4]
+        k1_out_p <- (summary(fit.nls)$coef)[2,4]
+        
+        alpha_out <- coef(fit.nls)[3]
+        alpha1_out <- coef(fit.nls)[4]
+        alpha1_out_p <- (summary(fit.nls)$coef)[4,4]
+        phi_out <- coef(fit.nls)[5]
+        phi1_out <- coef(fit.nls)[6]
+        phi1_out_p <- (summary(fit.nls)$coef)[6,4]
+        
+        comparison_model_success <- ifelse(alpha_out>0 & (alpha_out + alpha1_out) > 0 & phi1_out <pi & phi1_out >-pi, 1, 0)
+        comparison_model_timeout <- ifelse(n>timeout_n, TRUE, FALSE)
+        n <- n + 1
+      }
     }
     
     if(comparison_model_timeout == TRUE){
