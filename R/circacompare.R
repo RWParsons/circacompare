@@ -170,11 +170,11 @@ circacompare <- function(x,
       eq_2 <- function(time){k_out + k1_out + (alpha_out + alpha1_out)*cos((2*pi/period)*time - (phi_out + phi1_out))}
       
       fig_out <- ggplot2::ggplot(x, aes(time, measure)) +
-        stat_function(fun = eq_1, colour = "deep sky blue", size=1) +
+        stat_function(fun = eq_1, colour = "blue", size=1) +
         stat_function(fun = eq_2, colour = "red", size=1) +
         geom_point(aes(colour = group)) + 
         scale_colour_manual(breaks = c(group_1_text, group_2_text),
-                            values = c("deep sky blue", "red")) +
+                            values = c("blue", "red")) +
         xlab("time (hours)") +
         xlim(min(floor(x$time/period) * period),
              max(ceiling(x$time/period) * period))
