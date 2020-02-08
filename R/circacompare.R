@@ -259,107 +259,91 @@ circacompare <- function(x,
   }
 }
 
-circa_single <- function(x,
-                         col_time,
-                         col_outcome,
-                         period = 24,
-                         alpha_threshold = 0.05,
-                         timeout_n = 10000){
-
-  if(!"ggplot2" %in% installed.packages()[, "Package"]){
+circa_single <- function (x, col_time, col_outcome, period = 24, alpha_threshold = 0.05, 
+          timeout_n = 10000, return_figure = TRUE) 
+{
+  if (!"ggplot2" %in% installed.packages()[, "Package"]) {
     return(message("Please install 'ggplot2'"))
   }
-
   library(ggplot2)
-
   colnames(x)[grep(col_time, colnames(x))] <- "time"
-
-  if(!class(x$time) %in% c("numeric", "integer")){
-    return(message(paste("The time variable which you gave was a '",
-                         class(x$time),
-                         "' \nThis function expects time to be given as hours and be of class 'integer' or 'numeric'.",
-                         "\nPlease convert the time variable in your dataframe to be of one of these classes",
+  if (!class(x$time) %in% c("numeric", "integer")) {
+    return(message(paste("The time variable which you gave was a '", 
+                         class(x$time), "' \nThis function expects time to be given as hours and be of class 'integer' or 'numeric'.", 
+                         "\nPlease convert the time variable in your dataframe to be of one of these classes", 
                          sep = "")))
   }
-
   colnames(x)[grep(col_outcome, colnames(x))] <- "measure"
-
-  if(!class(x$measure) %in% c("numeric", "integer")){
-    return(message(paste("The measure variable which you gave was a '",
-                         class(x$measure),
-                         "' \nThis function expects measure to be number and be of class 'integer' or 'numeric'.",
-                         "\nPlease convert the measure variable in your dataframe to be of one of these classes",
+  if (!class(x$measure) %in% c("numeric", "integer")) {
+    return(message(paste("The measure variable which you gave was a '", 
+                         class(x$measure), "' \nThis function expects measure to be number and be of class 'integer' or 'numeric'.", 
+                         "\nPlease convert the measure variable in your dataframe to be of one of these classes", 
                          sep = "")))
   }
-
-  x$time_r <- (x$time/24)*2*pi*(24/period)
-
+  x$time_r <- (x$time/24) * 2 * pi * (24/period)
   comparison_model_success <- 0
   comparison_model_timeout <- FALSE
   success <- 0
   n <- 0
-
-  while(success !=1){
-    alpha_start <- (max(x$measure, na.rm = TRUE) - min(x$measure, na.rm = TRUE)) * runif(1)
-    phi_start <- runif(1)*6.15 - 3.15
-    k_start <- mean(x$measure, na.rm = TRUE)*2*runif(1)
-
-    fit.nls <- try({nls(measure~k + alpha*cos(time_r-phi),
-                        data = x,
-                        start = list(k = k_start, alpha = alpha_start, phi = phi_start))},
-                   silent = TRUE)
-    if(class(fit.nls) == "try-error"){
+  while (success != 1) {
+    alpha_start <- (max(x$measure, na.rm = TRUE) - min(x$measure, 
+                                                       na.rm = TRUE)) * runif(1)
+    phi_start <- runif(1) * 6.15 - 3.15
+    k_start <- mean(x$measure, na.rm = TRUE) * 2 * runif(1)
+    fit.nls <- try({
+      nls(measure ~ k + alpha * cos(time_r - phi), data = x, 
+          start = list(k = k_start, alpha = alpha_start, 
+                       phi = phi_start))
+    }, silent = TRUE)
+    if (class(fit.nls) == "try-error") {
       n <- n + 1
     }
-
-    else{
-      k_out <- summary(fit.nls)$coef[1,1]
-      alpha_out <- summary(fit.nls)$coef[2,1]
-      alpha_p <- summary(fit.nls)$coef[2,4]
-      phi_out <- summary(fit.nls)$coef[3,1]
-      success <- ifelse(alpha_out > 0 & phi_out >= 0 & phi_out <= 2*pi, 1, 0)
+    else {
+      k_out <- summary(fit.nls)$coef[1, 1]
+      alpha_out <- summary(fit.nls)$coef[2, 1]
+      alpha_p <- summary(fit.nls)$coef[2, 4]
+      phi_out <- summary(fit.nls)$coef[3, 1]
+      success <- ifelse(alpha_out > 0 & phi_out >= 0 & 
+                          phi_out <= 2 * pi, 1, 0)
       n <- n + 1
     }
-
-    if(n >= timeout_n){
+    if (n >= timeout_n) {
       return(message("Failed to converge data prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
     }
   }
-
-  data_rhythmic <- ifelse(alpha_p < alpha_threshold, TRUE, FALSE)
-
-  eq <- function(time){k_out + alpha_out*cos((2*pi/period)*time - phi_out)}
-
-  if(data_rhythmic == TRUE){
-    fig_out <- ggplot2::ggplot(x, aes(time, measure)) +
-      stat_function(fun = eq, size=1) +
-      geom_point() +
-      xlab("time (hours)") +
-      xlim(min(floor(x$time/period) * period),
-           max(ceiling(x$time/period) * period)) +
-      labs(subtitle = "Data is rhythmic")
-  }else{
-    fig_out <- ggplot2::ggplot(x, aes(time, measure)) +
-      geom_point() +
-      xlab("time (hours)") +
-      xlim(min(floor(x$time/period) * period),
-           max(ceiling(x$time/period) * period)) +
-      labs(subtitle = "Data is arrhythmic")
+  data_rhythmic <- ifelse(alpha_p < alpha_threshold, TRUE, 
+                          FALSE)
+  eq <- function(time) {
+    k_out + alpha_out * cos((2 * pi/period) * time - phi_out)
   }
-
+  if(return_figure == TRUE){
+    if(data_rhythmic == TRUE) {
+      fig_out <- ggplot2::ggplot(x, aes(time, measure)) + stat_function(fun = eq, 
+                                                                        size = 1) + geom_point() + xlab("time (hours)") + 
+        xlim(min(floor(x$time/period) * period), max(ceiling(x$time/period) * 
+                                                       period)) + labs(subtitle = "Data is rhythmic")
+      }
+    else{
+      fig_out <- ggplot2::ggplot(x, aes(time, measure)) + geom_point() + 
+        xlab("time (hours)") + xlim(min(floor(x$time/period) * 
+                                          period), max(ceiling(x$time/period) * period)) + 
+        labs(subtitle = "Data is arrhythmic")
+    }
+  }
+  
   k_out
   alpha_out
   alpha_p
   phi_out
-  peak_time <- phi_out*24/(2*pi)
-
-  output_parms <-
-    data.frame(mesor = k_out,
-               amplitude = alpha_out,
-               amplitude_p = alpha_p,
-               phase_radians = phi_out,
-               peak_time_hours = phi_out*24/(2*pi))
-
-  return(list(fig_out, output_parms, fit.nls))
-}
+  peak_time <- phi_out * 24/(2 * pi)
+  output_parms <- data.frame(mesor = k_out, amplitude = alpha_out, 
+                             amplitude_p = alpha_p, phase_radians = phi_out, peak_time_hours = phi_out * 
+                               24/(2 * pi))
+  if(return_figure == TRUE){
+    return(list(fit.nls, output_parms, fig_out))
+  }else{
+    return(list(fit.nls, output_parms))
+  }
+  
+  }
 
