@@ -2,7 +2,7 @@
 \alias{circa_single}
 \title{Analysis of circadian data}
 \usage{
-circa_single(x, col_time, col_outcome, period = 24, alpha_threshold = 0.05, timeout_n = 10000)
+circa_single(x, col_time, col_outcome, period = 24, alpha_threshold = 0.05, timeout_n = 10000, return_figure = TRUE)
 }
 \arguments{
 \item{x}{A data.frame containing circadian data.}
@@ -16,6 +16,8 @@ circa_single(x, col_time, col_outcome, period = 24, alpha_threshold = 0.05, time
 \item{alpha_threshold}{This determines the alpha value for classifying presence of rhythmicity. For example, if \code{alpha_threshold = 0.05}, then the data will be classified as rhythmic if p < 0.05 for amplitude being greater than zero.}
 
 \item{timeout_n}{A value which controls the upper limit for the nls fitting attempts.}
+                       
+\item{return_figure}{If \code{FALSE} skips the figure creation and returns only the nls object and outputs.  This saves computation time.}
 }
 \description{
 Takes circadian data in a single dataset and performs a nonlinear regression.  Values are estimated and given for mesor, amplitude and phase. Acommpanying the summary results, a ggplot and nls (nonlinear least squares regression) object is also returned.  The nls object can be used to extract p-values for the parameters difference from zero as well as the standard error for the given estimate. The data which is passed to \code{circa_single} does not necessarily have to include times only within hours 0 to 24. 
@@ -26,7 +28,7 @@ df <- make_data(hours_diff = 6)
 df <- df[df$group == "g1",]
 
 # call circacompare.
-out <- circacompare(x = df, col_time = "time", col_outcome = "measure")
+out <- circa_single(x = df, col_time = "time", col_outcome = "measure")
 
 # view the graph.
 out[[1]]
