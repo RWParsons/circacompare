@@ -335,10 +335,10 @@ circa_single <- function (x, col_time, col_outcome, period = 24, alpha_threshold
   alpha_out
   alpha_p
   phi_out
-  peak_time <- phi_out * 24/(2 * pi)
+  peak_time <- phi_out * period/(2 * pi)
   output_parms <- data.frame(mesor = k_out, amplitude = alpha_out, 
                              amplitude_p = alpha_p, phase_radians = phi_out, peak_time_hours = phi_out * 
-                               24/(2 * pi))
+                               period/(2 * pi))
   if(return_figure == TRUE){
     return(list(fit.nls, output_parms, fig_out))
   }else{
