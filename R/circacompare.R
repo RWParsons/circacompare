@@ -213,25 +213,25 @@ circacompare <- function(x,
     baseline_diff_pc <- ((k_out + k1_out)/k_out)*100 - 100
     amplitude_diff_abs <- alpha1_out
     amplitude_diff_pc <-  ((alpha_out+alpha1_out)/alpha_out)*100 - 100
-    g1_peak_time <- phi_out*24/(2*pi)
-    g2_peak_time <- (phi_out+phi1_out)*24/(2*pi)
-    while(g1_peak_time >24 | g1_peak_time < 0){
-      if(g1_peak_time >24){
-        g1_peak_time <- g1_peak_time - 24
+    g1_peak_time <- phi_out*period/(2*pi)
+    g2_peak_time <- (phi_out+phi1_out)*period/(2*pi)
+    while(g1_peak_time > period | g1_peak_time < 0){
+      if(g1_peak_time > period){
+        g1_peak_time <- g1_peak_time - period
       }
       if(g1_peak_time<0){
-        g1_peak_time <- g1_peak_time + 24
+        g1_peak_time <- g1_peak_time + period
       }
     }
-    while(g2_peak_time >24| g2_peak_time <0){
-      if(g2_peak_time>24){
-        g2_peak_time <- g2_peak_time - 24
+    while(g2_peak_time >period| g2_peak_time <0){
+      if(g2_peak_time>period){
+        g2_peak_time <- g2_peak_time - period
       }
       if(g2_peak_time<0){
-        g2_peak_time <- g2_peak_time + 24
+        g2_peak_time <- g2_peak_time + period
       }
     }
-    peak_time_diff <- phi1_out*24/(2*pi)
+    peak_time_diff <- phi1_out*period/(2*pi)
   }
 
   output_parms <- data.frame(parameter = c("Both groups were rhythmic",
@@ -345,5 +345,4 @@ circa_single <- function (x, col_time, col_outcome, period = 24, alpha_threshold
     return(list(fit.nls, output_parms))
   }
   
-  }
-
+}
