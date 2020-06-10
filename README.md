@@ -33,3 +33,7 @@ The data uploaded should be in csv format. The file which you upload ought to ha
 3. an outcome variable (which should be numeric)
 
 Upload your csv file and select the respective columns from the dropdown menu.  Click 'run' to conduct the comparison.
+
+# Python implementation
+
+An implementation of this package in Python is available [here](https://github.com/RWParsons/circacompare_py). This package comes with the added functionality of specification for the loss function.
