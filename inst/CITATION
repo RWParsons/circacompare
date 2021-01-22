@@ -1,0 +1,24 @@
+citHeader("To cite circacompare in publications use:")
+
+citEntry(entry = "Article",
+  title        = "CircaCompare: a method to estimate and statistically support differences in mesor, amplitude and phase, between circadian rhythms",
+  author       = personList(as.person("Rex Parsons"),
+                   as.person("Richard Parsons"),
+                   as.person("Nicholas Garner"),
+                   as.person("Henrik Oster"),
+                   as.person("Oliver Rawashdeh")),
+  journal      = "Bioinformatics",
+  year         = "2020",
+  volume       = "36",
+  number       = "4",
+  pages        = "1208-1212",
+  url          = "https://doi.org/10.1093/bioinformatics/btz730",
+
+  textVersion  =
+  paste("Rex Parsons, Richard Parsons, Nicholas Garner, Henrik Oster, ",
+        "Oliver Rawashdeh, CircaCompare: a method to estimate and ",
+        "statistically support differences in mesor, amplitude and phase, ",
+        "between circadian rhythms, Bioinformatics, Volume 36, Issue 4, 15 ",
+        "February 2020, Pages 1208–1212, ",
+        "https://doi.org/10.1093/bioinformatics/btz730")
+)
