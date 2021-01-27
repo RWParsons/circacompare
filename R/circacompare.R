@@ -153,6 +153,7 @@ circacompare <- function(x,
 
       if (class(fit.nls) == "try-error") {
         n <- n + 1
+        comparison_model_timeout <- ifelse(n>timeout_n, TRUE, FALSE)
       }
       else{
         k_out <- stats::coef(fit.nls)[1]
