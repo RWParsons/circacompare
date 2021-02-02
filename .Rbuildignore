@@ -1,3 +1,5 @@
 ^circacompare\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+^CRAN-RELEASE$
+^cran-comments\.md$
