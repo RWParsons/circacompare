@@ -3,21 +3,6 @@
 \name{circacompare_mixed}
 \alias{circacompare_mixed}
 \title{circacompare_mixed}
-\usage{
-circacompare_mixed(
-  x,
-  col_time,
-  col_group,
-  col_outcome,
-  col_id,
-  randomeffects = c("k", "k1", "alpha", "alpha1", "phi", "phi1"),
-  period = 24,
-  alpha_threshold = 0.05,
-  nlme_control = list(),
-  verbose = FALSE,
-  timeout_n = 10000
-)
-}
 \arguments{
 \item{x}{\code{data.frame}.  This is the data.frame which contains the rhythmic data for two groups in a tidy format.}
 
@@ -33,9 +18,11 @@ circacompare_mixed(
 
 \item{period}{The period of the rhythm. For circadian rhythms, leave this as the default value, \code{24}.}
 
-\item{alpha_threshold}{The level of alpha for which the presence of rhythmicity is considered. Default is to {0.05}.}
+\item{alpha_threshold}{The level of alpha for which the presence of rhythmicity is considered. Default is to \code{0.05}.}
 
-\item{nlme_control}{The list of control variables which is passed to the mixed model fitting function.  Create this using \code{nlme::nlmeControl(...)}.  This is left empty by default but you may need to adjust this if you're having convergence problems.}
+\item{nlme_control}{A list of control values for the estimation algorithm to replace the default values returned by the function nlme::nlmeControl. Defaults to an empty list.}
+
+\item{nlme_method}{A character string. If "REML" the model is fit by maximizing the restricted log-likelihood. If "ML" the log-likelihood is maximized. Defaults to "ML".}
 
 \item{verbose}{An optional logical value. If \code{TRUE} information on the evolution of the iterative algorithm is printed. Default is \code{FALSE}.}
 

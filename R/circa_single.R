@@ -1,4 +1,7 @@
-#' circa_single
+#' @title circa_single
+#' @name circa_single
+#'
+#' @description \code{circa_single} performs an analysis on a single rhythmic dataset. It estimates the mesor, amplitude and phase of the data provided.
 #'
 #' @param x data.frame.  This is the data.frame which contains the rhythmic data in a tidy format.
 #' @param col_time The name of the column within the data.frame, x, which contains time in hours at which the data were collected.

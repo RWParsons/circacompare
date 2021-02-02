@@ -33,7 +33,7 @@ circacompare(
 list
 }
 \description{
-circacompare
+\code{circacompare} performs a comparison between two rhythmic groups of data. It tests for rhythmicity and then fits a nonlinear model with parametrization to estimate and statistically support differences in mesor, amplitude, and phase between groups.
 }
 \examples{
 df <- make_data(phi1 = 6)

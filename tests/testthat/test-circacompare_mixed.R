@@ -1,9 +1,9 @@
 test_that("circacompare_mixed() works", {
-  set.seed(42)
+  set.seed(99)
   mixed_data <- function(n){
     counter <- 1
     for(i in 1:n){
-      x <- make_data(k1=0, alpha=0, phi1=rnorm(1, 6, 1))
+      x <- make_data(k1=0, alpha1=0, phi1=rnorm(1, 6, 1))
       x$id <- counter
       counter <- counter + 1
       if(i==1){res <- x}else{res <- rbind(res, x)}

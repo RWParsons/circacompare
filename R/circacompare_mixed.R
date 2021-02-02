@@ -1,4 +1,6 @@
-#' circacompare_mixed
+#' @title circacompare_mixed
+#' @name circacompare_mixed
+#'
 #' @description \code{circacompare_mixed} is similar to \code{circacompare} but allows for some simple, user-specified random-effects on the rhythmic parameters of choice.
 #'
 #' @param x \code{data.frame}.  This is the data.frame which contains the rhythmic data for two groups in a tidy format.
@@ -8,8 +10,9 @@
 #' @param col_id The name of the column within the data.frame, \code{x}, which contains the identifying values for the random effect, such as \code{subject_id}.
 #' @param randomeffects which rhythmic parameters to allow random effects. The default is to include all rhythmic parameters.
 #' @param period The period of the rhythm. For circadian rhythms, leave this as the default value, \code{24}.
-#' @param alpha_threshold The level of alpha for which the presence of rhythmicity is considered. Default is to {0.05}.
-#' @param nlme_control The list of control variables which is passed to the mixed model fitting function.  Create this using \code{nlme::nlmeControl(...)}.  This is left empty by default but you may need to adjust this if you're having convergence problems.
+#' @param alpha_threshold The level of alpha for which the presence of rhythmicity is considered. Default is to \code{0.05}.
+#' @param nlme_control A list of control values for the estimation algorithm to replace the default values returned by the function nlme::nlmeControl. Defaults to an empty list.
+#' @param nlme_method A character string. If "REML" the model is fit by maximizing the restricted log-likelihood. If "ML" the log-likelihood is maximized. Defaults to "ML".
 #' @param verbose An optional logical value. If \code{TRUE} information on the evolution of the iterative algorithm is printed. Default is \code{FALSE}.
 #' @param timeout_n The upper limit for the model fitting attempts. Default is \code{10000}.
 #'
@@ -38,6 +41,7 @@
 #'                           col_outcome = "measure", col_id = "id",
 #'                           randomeffects = c("phi", "phi1"))
 #' out
+utils::globalVariables(c('time', 'measure', 'group'))
 circacompare_mixed <- function(x,
                                col_time,
                                col_group,
@@ -47,6 +51,7 @@ circacompare_mixed <- function(x,
                                period = 24,
                                alpha_threshold = 0.05,
                                nlme_control = list(),
+                               nlme_method = "ML",
                                verbose = FALSE,
                                timeout_n = 10000){
 
@@ -60,6 +65,14 @@ circacompare_mixed <- function(x,
 
   x <- x[c(col_time, col_group, col_id, col_outcome)]
   colnames(x) <- c("time", "group", "id", "measure")
+
+  if(length(setdiff(randomeffects, c("k", "k1", "alpha", "alpha1", "phi", "phi1"))) != 0){
+    return(message('"randomeffects" should only include the names of parameters\nthat represent rhythmic characteristics in the model.\nThey should be a subset of, or equal to c("k", "k1", "alpha", "alpha1", "phi", "phi1")'))
+  }
+
+  if(length(randomeffects) == 0){
+    return(message("If you do not want to include any random effects, than you ought to use 'circacompare' rather than 'circacompare_mixed'"))
+  }
 
   if(length(levels(as.factor(x$group))) != 2){
     return(message("Your grouping variable had more or less than 2 levels! \nThis function is used to compare two groups of data. \nTo avoid me having to guess, please send data with only two possible values in your grouping variable to this function."))
@@ -200,7 +213,8 @@ circacompare_mixed <- function(x,
                                   fixed = k+k1+alpha+alpha1+phi+phi1~1,
                                   data = x,
                                   start = c(k=k_in, k1=k1_in, alpha=alpha_in, alpha1=alpha1_in, phi=phi_in, phi1=phi1_in),
-                                  # control = nlme_control,
+                                  method=nlme_method,
+                                  control = nlme_control,
                                   verbose = verbose)},
                       silent = ifelse(verbose, FALSE, TRUE)
       )

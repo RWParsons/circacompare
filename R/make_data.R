@@ -1,4 +1,7 @@
-#' Generate example circadian data with specified phase shift between groups
+#' @title make_data
+#' @name make_data
+#'
+#' @description Generate example circadian data with specified phase shift between groups
 #'
 #' @param k1 MESOR difference between groups.
 #' @param alpha1 amplitude difference between groups.

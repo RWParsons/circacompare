@@ -1,4 +1,7 @@
-#' circacompare
+#' @title circacompare
+#' @name circacompare
+#'
+#' @description \code{circacompare} performs a comparison between two rhythmic groups of data. It tests for rhythmicity and then fits a nonlinear model with parametrization to estimate and statistically support differences in mesor, amplitude, and phase between groups.
 #'
 #' @param x data.frame.  This is the data.frame which contains the rhythmic data for two groups in a tidy format.
 #' @param col_time The name of the column within the data.frame, x, which contains time in hours at which the data were collected.

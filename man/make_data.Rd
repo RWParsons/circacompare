@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_data.R
 \name{make_data}
 \alias{make_data}
-\title{Generate example circadian data with specified phase shift between groups}
+\title{make_data}
 \usage{
 make_data(k1 = 3, alpha1 = 4, phi1 = 6, seed = NULL)
 }
