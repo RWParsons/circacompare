@@ -1,6 +1,6 @@
 Package: circacompare
-Title: Analyses of circadian data
-Version: 0.1.1
+Title: Analyses of Circadian Data
+Version: 0.1.0
 Authors@R: 
     person(given = "Rex",
            family = "Parsons",
@@ -21,5 +21,8 @@ Imports:
     utils
 Suggests: 
     testthat (>= 3.0.0),
-    nlme
+    nlme,
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
+VignetteBuilder: knitr

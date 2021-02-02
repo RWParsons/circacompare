@@ -3,7 +3,7 @@
 #'
 #' @description Generate example circadian data with specified phase shift between groups
 #'
-#' @param k1 MESOR difference between groups.
+#' @param k1 mesor difference between groups.
 #' @param alpha1 amplitude difference between groups.
 #' @param phi1 Amount of phase shift, in hours, between the two groups within the generated data
 #' @param seed random seed for generating data.

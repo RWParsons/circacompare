@@ -1,0 +1,122 @@
+---
+title: "Introduction to using circacompare"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{circacompare-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 5,
+  fig.height = 3.5
+)
+library(circacompare)
+set.seed(42)
+data_single <- make_data(k1=0, alpha1=0, phi1=0)[c("time", "measure")]
+data_grouped <- make_data(phi1=6)
+```
+
+## Input data
+
+The first part of using circacompare to analyse your data is to ensure that your data is formatted correctly.
+All of the functions within the circacompare package expect that your data will be of a tidy format, meaning that each row will contain only one observation, with columns to represent the time, group or subject ID for that observation. 
+
+In the simplest case, you may have a single rhythm for which you're wanting to estimate the mesor, amplitude and phase.  In this case, you only need a variable for the time of observation and the outcome which you're wanting to model.
+
+```{r}
+head(data_single)
+```
+In the case that you have data from two groups and you're wishing to determine the differences in mesor, amplitude, or phase between them, you will need an additional column (with two possible values) representing the groups.
+
+```{r}
+head(data_grouped)
+tail(data_grouped)
+```
+
+
+## `circa_single()`
+
+`circa_single()` is used to analyse a single rhythm and provide estimates of its mesor, amplitude and phase.
+
+```{r}
+result <- circa_single(x=data_single, col_time="time", col_outcome="measure", period=24)
+
+result
+```
+
+The fitted model is included as the first element of the results.  
+
+It fits a model: `measure ~ k + alpha * cos(time_r - phi)` where
+
+* `measure` is the outcome of interest
+
+* `k` is the mesor
+
+* `alpha` is the amplitude
+
+* `time_r` is the time in radian-hours, and
+
+* `phi` is the amount of phase shift (from `time=0`) in radian-hours.
+
+The parameter estimates of time in radian-hours (`time_r` and `phi`) are converted back to hours and reported in the `data.frame` (second element of list) and x-axis of the graph (third item of list)
+
+
+## `circacompare()`
+
+`circacompare()` is used to analyse a dataset with two groups of rhythmic data. It fits a model to estimate and statistically support differences in mesor, amplitude and phase between the two groups.
+
+```{r}
+result2 <- circacompare(x=data_grouped, col_time="time", col_group="group", col_outcome="measure")
+
+result2
+```
+
+This fits a model: `measure ~ k + k1 * x_group + (alpha + alpha1 * x_group) * cos(time_r - (phi + phi1 * x_group))` where
+
+* `x_group` is a dummy variable which represents the different groups: `x_group=0` and `x_group=1` for the first and second group, respectively
+
+* `measure` is the outcome of interest
+
+* `k` is the mesor of the first group
+
+* `k1` is the difference in mesor between the first and second group
+
+* `alpha` is the amplitude of the first group
+
+* `alpha1` is the difference in amplitude between the first and second group
+
+* `time_r` is the time in radian-hours
+
+* `phi` is the amount of phase-shift of the first group (from `time=0`) in radian-hours, and
+
+* `phi1` is the amount of phase-shift of the second group from the first group in radian-hours
+
+
+The time-related parameter estimates (`phi` and `phi1`) are converted from radian-hours to hours before being used to report `g1 peak time`, `g2 peak time`, and `phase difference estimate`.
+
+The second item of the `result2` list is a data.frame containing the important results from the model.  It returns estimates and for the rhythmic parameters for each group as well as the p-values associated with those which represent differences between the groups (`k1`, `alpha1`, `phi1`).
+
+More detailed outputs from the model can be obtained from the model itself
+
+```{r}
+nls_model <- result2[[3]]
+
+confint(nls_model)
+```
+
+
+## When to use what
+
+If you are looking to estimate the rhythmic parameters of a single group, use `circa_single()`.
+If you are looking to estimate the differences between two rhythmic datasets, use `circacompare()`
+
+If your data has a hierarchical structure, a mixed model may be more appropriate. This may be the case if you have repeated measurements from the same subjects/tissues over time, for example. In this case, consider the equivalents of the above: `circa_single_mixed()` and `circacompare_mixed()`.  In addition to what has been described, these mixed models require the user to specify which parameters ought to have a random effect and the identifying column (`col_id`) for this hierarchical structure.
+
+
+
+
+

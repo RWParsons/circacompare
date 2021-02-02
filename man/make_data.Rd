@@ -7,7 +7,7 @@
 make_data(k1 = 3, alpha1 = 4, phi1 = 6, seed = NULL)
 }
 \arguments{
-\item{k1}{MESOR difference between groups.}
+\item{k1}{mesor difference between groups.}
 
 \item{alpha1}{amplitude difference between groups.}
 
