@@ -1,5 +1,6 @@
 <!-- badges: start -->
-[![](https://img.shields.io/badge/doi-10.1093/bioinformatics/btz730-green.svg)](https://doi.org/10.1093/bioinformatics/btz730)
+[![DOI](https://img.shields.io/badge/doi-10.1093/bioinformatics/btz730-green.svg)](https://doi.org/10.1093/bioinformatics/btz730)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/last-month/circacompare)](https://www.r-pkg.org/pkg/circacompare)
 <!-- badges: end -->
 
 # circacompare
