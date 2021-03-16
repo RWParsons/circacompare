@@ -34,7 +34,6 @@
 #' df <- mixed_data(n=50)
 #' out <- circa_single_mixed(x = df, col_time = "time", col_outcome = "measure",
 #'                          col_id = "id", randomeffects = c("k"))
-
 circa_single_mixed <- function (x,
                                 col_time,
                                 col_outcome,

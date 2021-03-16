@@ -12,9 +12,14 @@ test_that("circacompare_mixed() works", {
   }
   df <- mixed_data(n=50)
 
-  out <- circacompare_mixed(x = df, col_time = "time", col_group = "group",
-                            col_outcome = "measure", col_id = "id",
-                            randomeffects = c("phi", "phi1"))
+  out <- suppressWarnings(circacompare_mixed(
+    x = df,
+    col_time = "time",
+    col_group = "group",
+    col_outcome = "measure",
+    col_id = "id",
+    randomeffects = c("phi", "phi1")
+  ))
 
   phi1_est <- summary(out[[3]])$tTable[6,1]
   phi1_est_close_to_generator <- (abs(phi1_est) - 0.5*pi) < 1

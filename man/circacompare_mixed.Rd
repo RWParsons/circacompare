@@ -3,6 +3,22 @@
 \name{circacompare_mixed}
 \alias{circacompare_mixed}
 \title{circacompare_mixed}
+\usage{
+circacompare_mixed(
+  x,
+  col_time,
+  col_group,
+  col_outcome,
+  col_id,
+  randomeffects = c("k", "alpha", "phi"),
+  period = 24,
+  alpha_threshold = 0.05,
+  nlme_control = list(),
+  nlme_method = "ML",
+  verbose = FALSE,
+  timeout_n = 10000
+)
+}
 \arguments{
 \item{x}{\code{data.frame}.  This is the data.frame which contains the rhythmic data for two groups in a tidy format.}
 
@@ -22,7 +38,7 @@
 
 \item{nlme_control}{A list of control values for the estimation algorithm to replace the default values returned by the function nlme::nlmeControl. Defaults to an empty list.}
 
-\item{nlme_method}{A character string. If "REML" the model is fit by maximizing the restricted log-likelihood. If "ML" the log-likelihood is maximized. Defaults to "ML".}
+\item{nlme_method}{A character string. If "REML" the model is fit by maximizing the restricted log-likelihood. If "ML" the log-likelihood is maximized. Defaults to "REML".}
 
 \item{verbose}{An optional logical value. If \code{TRUE} information on the evolution of the iterative algorithm is printed. Default is \code{FALSE}.}
 
