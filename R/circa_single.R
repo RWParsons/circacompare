@@ -78,8 +78,8 @@ circa_single <- function (x,
     k_out + alpha_out * cos((2 * pi/period) * time - phi_out)
   }
 
-  if(return_figure == TRUE){
-    if(data_rhythmic == TRUE) {
+  if(return_figure){
+    if(data_rhythmic) {
       fig_out <- ggplot2::ggplot(x, ggplot2::aes(time, measure)) +
         ggplot2::stat_function(fun = eq, size = 1) +
         ggplot2::geom_point() +
@@ -100,7 +100,7 @@ circa_single <- function (x,
   output_parms <- data.frame(mesor = k_out, amplitude = alpha_out,
                              amplitude_p = alpha_p, phase_radians = phi_out, peak_time_hours = phi_out *
                                period/(2 * pi))
-  if(return_figure == TRUE){
+  if(return_figure){
     return(list(fit.nls, output_parms, fig_out))
   }else{
     return(list(fit.nls, output_parms))

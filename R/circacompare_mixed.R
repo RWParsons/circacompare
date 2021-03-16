@@ -50,7 +50,7 @@ circacompare_mixed <- function(x,
                                period = 24,
                                alpha_threshold = 0.05,
                                nlme_control = list(),
-                               nlme_method = "ML",
+                               nlme_method = "REML",
                                verbose = FALSE,
                                timeout_n = 10000){
 
@@ -102,106 +102,46 @@ circacompare_mixed <- function(x,
   x$time_r <- (x$time/24)*2*pi*(24/period)
   x$x_group <- ifelse(x$group == group_1_text, 0, 1)
 
-  comparison_model_success <- FALSE
-  comparison_model_timeout <- FALSE
-  g1_success <- FALSE
-  g2_success <- FALSE
-  g1_alpha_p <- NA
-  g2_alpha_p <- NA
   dat_group_1 <- x[x$group == group_1_text,]
   dat_group_2 <- x[x$group == group_2_text,]
 
-  n <- 0
-
-
-  nlme_model_each_group <- function(data){
-    success <- FALSE
-    n <- 0
-    while(!success){
-      starting_params <- c(
-        k=mean(data$measure, na.rm = TRUE)*2*stats::runif(1),
-        alpha=(max(data$measure, na.rm = TRUE) - min(data$measure, na.rm = TRUE)) * stats::runif(1),
-        phi=stats::runif(1)*6.15 - 3.15
-      )
-
-      ranefs <- intersect(c("k", "alpha", "phi"), randomeffects)
-      if(length(ranefs)!=0){
-        ranefs_formula <- stats::formula(paste(paste0(ranefs, collapse="+"), "~ 1 | id"))
-      }else{
-        ranefs_formula <- NULL
-      }
-      fit.nlme <- try({nlme::nlme(model = measure~k+alpha*cos(time_r-phi),
-                                  random = ranefs_formula,
-                                  fixed = k+alpha+phi~1,
-                                  data = data,
-                                  start = starting_params,
-                                  method = nlme_method,
-                                  control = nlme_control,
-                                  verbose = verbose)},
-                      silent = ifelse(verbose, FALSE, TRUE)
-      )
-      if("try-error" %in% class(fit.nlme)){
-        n <- n + 1
-      }else{
-        tTable <- summary(fit.nlme)$tTable
-        k_out <- tTable['k', 'Value']
-        alpha_out <- tTable['alpha', 'Value']
-        alpha_p <- tTable['alpha', 'p-value']
-        phi_out <- tTable['phi', 'Value']
-        success <- ifelse(alpha_out > 0 & phi_out > 0 & phi_out < 2*pi ,TRUE,FALSE)
-        n <- n + 1
-
-      }
-      if(n >= timeout_n){
-        return(list(
-          model=NA,
-          timeout=TRUE,
-          rhythmic=NA,
-          k_estimate=NA,
-          alpha_estimate=NA,
-          phi_estimate=NA
-        ))
-      }
-    }
-    return(list(
-      model=fit.nlme,
-      timeout=FALSE,
-      rhythmic=alpha_p<alpha_threshold,
-      k_estimate=k_out,
-      alpha_estimate=alpha_out,
-      phi_estimate=phi_out
-    ))
-  }
-
-  g1_model <- nlme_model_each_group(dat_group_1)
+  g1_model <- model_each_group(data=dat_group_1, type="nlme",
+                               args=list(
+                                 timeout_n=timeout_n,
+                                 alpha_threshold=alpha_threshold,
+                                 randomeffects=randomeffects,
+                                 nlme_method=nlme_method,
+                                 nlme_control=nlme_control,
+                                 verbose=verbose
+                               ))
   if(g1_model$timeout){return(message("Failed to converge", group_1_text, " model prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))}
-  g2_model <- nlme_model_each_group(dat_group_2)
+
+  g2_model <- model_each_group(data=dat_group_2, type="nlme",
+                               args=list(
+                                 timeout_n=timeout_n,
+                                 alpha_threshold=alpha_threshold,
+                                 randomeffects=randomeffects,
+                                 nlme_method=nlme_method,
+                                 nlme_control=nlme_control,
+                                 verbose=verbose
+                               ))
   if(g2_model$timeout){return(message("Failed to converge", group_2_text, " model prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))}
 
   both_groups_rhythmic <- ifelse(g1_model$rhythmic & g2_model$rhythmic, TRUE, FALSE)
-
   if(!both_groups_rhythmic){
-    if(!g1_rhythmic & !g2_rhythmic){
+    if(!g1_model$rhythmic & !g2_model$rhythmic){
       return(message("Both groups of data were arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
     }
-    if(!g1_rhythmic){
+    if(!g1_model$rhythmic){
       return(message(group_1_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
     }else{
       return(message(group_2_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
     }
   }
+
   n <- 0
-  f_estimate_phi1 <- function(p){
-      p <- stats::rnorm(1, p, 2)
-      if(abs(p) > pi){
-        if(p < 0){
-          p <- p + 2*pi
-        }else{
-          p <- p - 2*pi
-        }
-      }
-      return(p)
-    }
+  comparison_model_success <- FALSE
+  comparison_model_timeout <- FALSE
   while(!comparison_model_success & !comparison_model_timeout){
     starting_params <- c(
       k=g1_model$k_estimate*2*stats::runif(1),
@@ -209,7 +149,7 @@ circacompare_mixed <- function(x,
       alpha=g1_model$alpha_estimate*2*stats::runif(1),
       alpha1=(g2_model$alpha_estimate - g1_model$alpha_estimate)*2*stats::runif(1),
       phi=g1_model$phi_estimate*2*stats::runif(1),
-      phi1=f_estimate_phi1(p=(g2_model$phi_estimate - g1_model$phi_estimate))
+      phi1=random_start_phi1(p=(g2_model$phi_estimate - g1_model$phi_estimate))
     )
     randomeffects_formula <- stats::formula(paste(paste0(randomeffects, collapse="+"), "~ 1 | id"))
     fit.nlme <- try({nlme::nlme(measure~k+k1*x_group+(alpha+alpha1*x_group)*cos(time_r-(phi+phi1*x_group)),
@@ -226,17 +166,8 @@ circacompare_mixed <- function(x,
       n <- n + 1
     }
     else{
-      tTable <- summary(fit.nlme)$tTable
-      k_out <- tTable['k', 'Value']
-      k1_out <- tTable['k1', 'Value']
-      k1_out_p <- tTable['k', 'p-value']
-      alpha_out <- tTable['alpha', 'Value']
-      alpha1_out <- tTable['alpha1', 'Value']
-      alpha1_out_p <- tTable['alpha1', 'p-value']
-      phi_out <- tTable['phi', 'Value']
-      phi1_out <- tTable['phi1', 'Value']
-      phi1_out_p <- tTable['phi1', 'p-value']
-      comparison_model_success <- ifelse(alpha_out>0 & (alpha_out + alpha1_out) > 0 & phi1_out < pi & phi1_out >- pi, TRUE, FALSE)
+      nlme_coefs <- extract_model_coefs(fit.nlme)
+      comparison_model_success <- ifelse(nlme_coefs['alpha', 'estimate']>0 & (nlme_coefs['alpha', 'estimate'] + nlme_coefs['alpha1', 'estimate']) > 0 & nlme_coefs['phi1', 'estimate'] < pi & nlme_coefs['phi1', 'estimate'] >- pi, TRUE, FALSE)
       comparison_model_timeout <- ifelse(n>timeout_n, TRUE, FALSE)
       n <- n + 1
     }
@@ -245,9 +176,12 @@ circacompare_mixed <- function(x,
     return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
   }
 
+  # Store the parameter estimate values in a named (numeric) vector for less verbose access
+  V <- nlme_coefs[, 'estimate']
+
   # Graph the model and data
-  eq_1 <- function(time){k_out + alpha_out*cos((2*pi/period)*time - phi_out)}
-  eq_2 <- function(time){k_out + k1_out + (alpha_out + alpha1_out)*cos((2*pi/period)*time - (phi_out + phi1_out))}
+  eq_1 <- function(time){V['k'] + V['alpha']*cos((2*pi/period)*time - V['phi'])}
+  eq_2 <- function(time){V['k'] + V['k1'] + (V['alpha'] + V['alpha1'])*cos((2*pi/period)*time - (V['phi'] + V['phi1']))}
   fig_out <- ggplot2::ggplot(x, ggplot2::aes(time, measure)) +
     ggplot2::stat_function(ggplot2::aes(colour = group_1_text), fun = eq_1, size = 1) +
     ggplot2::stat_function(ggplot2::aes(colour = group_2_text), fun = eq_2, size = 1) +
@@ -259,43 +193,41 @@ circacompare_mixed <- function(x,
     ggplot2::xlim(min(floor(x$time/period) * period),
                   max(ceiling(x$time/period) * period))
 
-
-  if(both_groups_rhythmic & comparison_model_success){
-    #  adjust phi_out so that -pi < phi_out < pi
-    if(phi_out > pi){
-      while(phi_out > pi){
-        phi_out <- phi_out - 2*pi
-      }
+  #  Adjust phi_out so that -pi < phi_out < pi
+  if(V['phi'] > pi){
+    while(V['phi'] > pi){
+      V['phi'] <- V['phi'] - 2*pi
     }
-    if(phi_out < -pi){
-      while(phi_out < -pi){
-        phi_out <- phi_out + 2*pi
-      }
-    }
-    baseline_diff_abs <- k1_out
-    baseline_diff_pc <- ((k_out + k1_out)/k_out)*100 - 100
-    amplitude_diff_abs <- alpha1_out
-    amplitude_diff_pc <-  ((alpha_out+alpha1_out)/alpha_out)*100 - 100
-    g1_peak_time <- phi_out*period/(2*pi)
-    g2_peak_time <- (phi_out+phi1_out)*period/(2*pi)
-    while(g1_peak_time > period | g1_peak_time < 0){
-      if(g1_peak_time > period){
-        g1_peak_time <- g1_peak_time - period
-      }
-      if(g1_peak_time<0){
-        g1_peak_time <- g1_peak_time + period
-      }
-    }
-    while(g2_peak_time>period| g2_peak_time <0){
-      if(g2_peak_time>period){
-        g2_peak_time <- g2_peak_time - period
-      }
-      if(g2_peak_time<0){
-        g2_peak_time <- g2_peak_time + period
-      }
-    }
-    peak_time_diff <- phi1_out*period/(2*pi)
   }
+  if(V['phi'] < -pi){
+    while(V['phi'] < -pi){
+      V['phi'] <- V['phi'] + 2*pi
+    }
+  }
+  baseline_diff_abs <- V['k']
+  baseline_diff_pc <- ((V['k'] + V['k1'])/V['k'])*100 - 100
+  amplitude_diff_abs <- V['alpha1']
+  amplitude_diff_pc <-  ((V['alpha']+V['alpha1'])/V['alpha'])*100 - 100
+  g1_peak_time <- V['phi']*period/(2*pi)
+  g2_peak_time <- (V['phi']+V['phi1'])*period/(2*pi)
+  while(g1_peak_time > period | g1_peak_time < 0){
+    if(g1_peak_time > period){
+      g1_peak_time <- g1_peak_time - period
+    }
+    if(g1_peak_time<0){
+      g1_peak_time <- g1_peak_time + period
+    }
+  }
+  while(g2_peak_time>period| g2_peak_time < 0){
+    if(g2_peak_time>period){
+      g2_peak_time <- g2_peak_time - period
+    }
+    if(g2_peak_time<0){
+      g2_peak_time <- g2_peak_time + period
+    }
+  }
+  peak_time_diff <- V['phi1']*period/(2*pi)
+
   output_parms <- data.frame(parameter = c("Both groups were rhythmic",
                                            paste("Presence of rhythmicity (p-value) for ", group_1_text, sep = ""),
                                            paste("Presence of rhythmicity (p-value) for ", group_2_text, sep = ""),
@@ -311,13 +243,11 @@ circacompare_mixed <- function(x,
                                            paste(group_2_text, " peak time", sep = ""),
                                            "Phase difference estimate",
                                            "P-value for difference in phase"),
-                             value = c(both_groups_rhythmic, g1_alpha_p, g2_alpha_p, k_out, (k_out + k1_out), k1_out,
-                                       k1_out_p, alpha_out, alpha_out + alpha1_out, alpha1_out, alpha1_out_p,
-                                       g1_peak_time, g2_peak_time, peak_time_diff, phi1_out_p))
 
+                             value = c(both_groups_rhythmic, g1_model$alpha_p, g2_model$alpha_p, V['k'], (V['k'] + V['k1']), V['k1'],
+                                       nlme_coefs['k1', 'p_value'], V['alpha'], V['alpha'] + V['alpha1'], V['alpha1'], nlme_coefs['alpha1', 'p_value'],
+                                       g1_peak_time, g2_peak_time, peak_time_diff, nlme_coefs['phi1', 'p_value']))
 
-  if(exists("fig_out")){
-    return(list(fig_out, output_parms, fit.nlme))
-  }
+  return(list(plot=fig_out, table=output_parms, fit=fit.nlme))
 }
 utils::globalVariables(c('time', 'measure', 'group'))

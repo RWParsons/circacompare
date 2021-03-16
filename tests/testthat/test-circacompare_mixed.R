@@ -18,7 +18,7 @@ test_that("circacompare_mixed() works", {
     col_group = "group",
     col_outcome = "measure",
     col_id = "id",
-    randomeffects = c("phi", "phi1")
+    randomeffects = c("phi")
   ))
 
   phi1_est <- summary(out[[3]])$tTable[6,1]

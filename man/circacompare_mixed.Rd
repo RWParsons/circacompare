@@ -14,7 +14,7 @@ circacompare_mixed(
   period = 24,
   alpha_threshold = 0.05,
   nlme_control = list(),
-  nlme_method = "ML",
+  nlme_method = "REML",
   verbose = FALSE,
   timeout_n = 10000
 )
