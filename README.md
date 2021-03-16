@@ -1,3 +1,8 @@
+<!-- badges: start -->
+[![DOI](https://img.shields.io/badge/doi-10.1093/bioinformatics/btz730-green.svg)](https://doi.org/10.1093/bioinformatics/btz730)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/last-month/circacompare)](https://www.r-pkg.org/pkg/circacompare)
+<!-- badges: end -->
+
 # circacompare
 `circacompare` is an R package that allows for the statistical analyses and comparison of two circadian rhythms.
 This work is published [here](https://academic.oup.com/bioinformatics/article-abstract/doi/10.1093/bioinformatics/btz730/5582266) and can be cited as: 
@@ -7,6 +12,16 @@ Rex Parsons, Richard Parsons, Nicholas Garner, Henrik Oster, Oliver Rawashdeh, C
 
 
 # Installation
+
+### Installing from CRAN
+
+```
+install.packages("circacompare")
+```
+
+
+
+### Installing development version from GitHub
 
 If you have not done so already, install `devtools` using the following code:
 
