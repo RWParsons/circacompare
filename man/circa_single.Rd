@@ -11,7 +11,8 @@ circa_single(
   period = 24,
   alpha_threshold = 0.05,
   timeout_n = 10000,
-  return_figure = TRUE
+  return_figure = TRUE,
+  control = list()
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ circa_single(
 \item{timeout_n}{The upper limit for the model fitting attempts. Default is 10,000.}
 
 \item{return_figure}{Whether or not to return a ggplot graph of the rhythm and cosine model.}
+
+\item{control}{\code{list}. Used to control the parameterization of the model.}
 }
 \value{
 list

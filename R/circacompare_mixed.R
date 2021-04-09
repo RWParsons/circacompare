@@ -250,4 +250,4 @@ circacompare_mixed <- function(x,
 
   return(list(plot=fig_out, table=output_parms, fit=fit.nlme))
 }
-utils::globalVariables(c('time', 'measure', 'group'))
+

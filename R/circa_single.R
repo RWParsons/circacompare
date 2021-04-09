@@ -10,6 +10,7 @@
 #' @param alpha_threshold The level of alpha for which the presence of rhythmicity is considered. Default is 0.05.
 #' @param timeout_n The upper limit for the model fitting attempts. Default is 10,000.
 #' @param return_figure Whether or not to return a ggplot graph of the rhythm and cosine model.
+#' @param control \code{list}. Used to control the parameterization of the model.
 #'
 #' @return list
 #' @export
@@ -23,9 +24,20 @@ circa_single <- function (x,
                           period = 24,
                           alpha_threshold = 0.05,
                           timeout_n = 10000,
-                          return_figure = TRUE){
+                          return_figure = TRUE,
+                          control = list()){
   if(!requireNamespace("ggplot2", quietly = TRUE) & return_figure){
     return(message("Please install 'ggplot2'"))
+  }
+
+  controlVals <- circa_single_control()
+  controlVals[names(control)] <- control
+
+  if(controlVals$period_param){
+    controlVals$main_params <- c(controlVals$main_params, "tau")
+  }
+  if("tau" %in% controlVals$main_params){
+    controlVals$period_param=TRUE
   }
 
   x <- x[c(col_time, col_outcome)]
@@ -44,39 +56,66 @@ circa_single <- function (x,
                          "\nPlease convert the measure variable in your dataframe to be of one of these classes",
                          sep = "")))
   }
-  x$time_r <- (x$time/24) * 2 * pi * (24/period)
-  comparison_model_success <- 0
-  comparison_model_timeout <- FALSE
-  success <- 0
+
+  if(!class(period) %in% c("numeric", "integer") & !controlVals$period_param){
+    return(message(paste0("The period argument must be a number representing the period of the rhythm in hours\n",
+                         "If you would like the period to be estimated as part of the model, use:\ncontrol=list(period_param=TRUE)")))
+  }
+
+  if(controlVals$period_param & !is.na(period)){
+    message(paste0("control$period_param is TRUE\n'period=", period, "' is being ignored.\nSet 'period=NA' to avoid this message"))
+  }
+
+
+  if(!controlVals$period_param){
+    x$time_r <- (x$time/24) * 2 * pi * (24/period)
+
+  }else{
+    x$time_r <- (x$time/24) * 2 * pi
+    if(is.null(controlVals$period_min) | is.null(controlVals$period_min)){
+      message(paste0("If you want the model to estimate the period using a parameter,",
+              "you may get faster convergence if you provide an approximate range using 'period_min' and 'period_max' in control()",
+              "\nCurrently assuming period is between: period_min=", controlVals$period_min,
+              "and period_max=", controlVals$period_max))
+    }
+  }
+
+  success <- FALSE
   n <- 0
-  while (success != 1) {
-    alpha_start <- (max(x$measure, na.rm = TRUE) - min(x$measure, na.rm = TRUE)) * stats::runif(1)
-    phi_start <- stats::runif(1) * 6.15 - 3.15
-    k_start <- mean(x$measure, na.rm = TRUE) * 2 * stats::runif(1)
+  form <- create_formula(main_params = controlVals$main_params, decay_params=controlVals$decay_params)$formula
+
+  while(!success){
     fit.nls <- try({
-      stats::nls(measure ~ k + alpha * cos(time_r - phi),
+      stats::nls(formula = form,
                  data = x,
-                 start = list(k = k_start, alpha = alpha_start, phi = phi_start))
-    }, silent = TRUE)
+                 start=start_list(outcome=x$measure, controlVals=controlVals))
+    }, silent = FALSE)
     if (class(fit.nls) == "try-error") {
       n <- n + 1
     }
-    else {
-      k_out <- summary(fit.nls)$coef[1, 1]
-      alpha_out <- summary(fit.nls)$coef[2, 1]
-      alpha_p <- summary(fit.nls)$coef[2, 4]
-      phi_out <- summary(fit.nls)$coef[3, 1]
+    else{
+      nls_coefs <- extract_model_coefs(fit.nls)
+
+      k_out <- nls_coefs['k', 'estimate']
+      alpha_out <- nls_coefs['alpha', 'estimate']
+      alpha_p <- nls_coefs['alpha', 'p_value']
+      phi_out <- nls_coefs['phi', 'estimate']
+
       success <- ifelse(alpha_out > 0 & phi_out >= 0 & phi_out <= 2 * pi, 1, 0)
+
       n <- n + 1
     }
-    if (n >= timeout_n) {
+    if(n >= timeout_n){
       return(message("Failed to converge data prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
     }
   }
-  data_rhythmic <- ifelse(alpha_p < alpha_threshold, TRUE, FALSE)
-  eq <- function(time) {
-    k_out + alpha_out * cos((2 * pi/period) * time - phi_out)
-  }
+
+  data_rhythmic <- alpha_p < alpha_threshold
+  V <- nls_coefs[, 'estimate']
+  if(!controlVals$period_param){V['tau'] <- period}
+
+  eq_expression <- create_formula(main_params = controlVals$main_params, decay_params=controlVals$decay_params)$f_equation
+  eval(parse(text=eq_expression))
 
   if(return_figure){
     if(data_rhythmic) {
@@ -96,14 +135,34 @@ circa_single <- function (x,
     }
   }
 
-  peak_time <- phi_out * period/(2 * pi)
-  output_parms <- data.frame(mesor = k_out, amplitude = alpha_out,
-                             amplitude_p = alpha_p, phase_radians = phi_out, peak_time_hours = phi_out *
-                               period/(2 * pi))
-  if(return_figure){
-    return(list(fit.nls, output_parms, fig_out))
-  }else{
-    return(list(fit.nls, output_parms))
+  output_parms <- data.frame(mesor = V['k'], amplitude = V['alpha'],
+                             amplitude_p = nls_coefs['alpha', 'p_value'], phase_radians = V['phi'],
+                             peak_time_hours = (V['phi']/(2*pi)) * V['tau'],
+                             period = V['tau'])
+
+  if(output_parms$peak_time_hours > V['tau']){
+    if(controlVals$period_param){
+      stop("Bad model fit. Phase was poorly estimated! If you can, assume a known period rather than parametrising it.")
+    }else{
+      stop("Bad model fit. Phase was poorly estimated!")
+    }
   }
 
+  if(return_figure){
+    return(list(model=fit.nls, summary=output_parms, plot=fig_out))
+  }else{
+    return(list(model=fit.nls, summary=output_parms))
+  }
 }
+
+circa_single_control <- function(period_param=F, period_min=20, period_max=28,
+                                 main_params=c("k", "alpha", "phi"), decay_params=c()){
+  list(period_param=period_param, period_min=period_min, period_max=period_max,
+       main_params=main_params, decay_params=decay_params)
+}
+
+
+
+
+
+
