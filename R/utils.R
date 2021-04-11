@@ -144,21 +144,18 @@ create_formula <- function(main_params=c("k", "alpha", "phi"), decay_params=c(),
           component <- ""
         }
       }else{
-        if(eq){
-          component <- paste0("(24/(", component, "))*")
-        }else{
-          component <- paste0("24/(", component, ")*")
-        }
+        component <- paste0("(24/(", component, "))*")
       }
     }
     return(component)
   }
   res_formula <- paste0("measure~", build_component("^k"), "+(", build_component("^alpha"),
-                        ")*cos(", build_component("^tau"), "(time_r-(", build_component("^phi"), ")))")
+                        ")*cos(", build_component("^tau"), "time_r-(", build_component("^phi"), "))")
   res_formula <- gsub("1", "1*x_group", res_formula)
   res_formula <- stats::as.formula(res_formula)
   res_equation <- paste0(build_component("^k", eq=T), "+(", build_component("^alpha", eq=T),
-                         ")*cos(", build_component("^tau", eq=T), "(time-(", build_component("^phi", eq=T), ")))")
+                         ")*cos(", build_component("^tau", eq=T), "time-(", build_component("^phi", eq=T), "))")
+
 
   if(length(grouped_params)>0){
     res_equation <- list(

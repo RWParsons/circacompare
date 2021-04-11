@@ -89,29 +89,27 @@ circa_single <- function (x,
       stats::nls(formula = form,
                  data = x,
                  start=start_list(outcome=x$measure, controlVals=controlVals))
-    }, silent = FALSE)
+    }, silent = TRUE)
     if (class(fit.nls) == "try-error") {
       n <- n + 1
     }
     else{
       nls_coefs <- extract_model_coefs(fit.nls)
+      V <- nls_coefs[, 'estimate']
 
-      k_out <- nls_coefs['k', 'estimate']
-      alpha_out <- nls_coefs['alpha', 'estimate']
-      alpha_p <- nls_coefs['alpha', 'p_value']
-      phi_out <- nls_coefs['phi', 'estimate']
-
-      success <- ifelse(alpha_out > 0 & phi_out >= 0 & phi_out <= 2 * pi, 1, 0)
-
+      if(controlVals$period_param){
+        success <- ifelse(V['alpha'] > 0 & V['phi'] >= 0 & V['phi'] <= 2 * pi & V['tau'] > 0 , 1, 0)
+      }else{
+        success <- ifelse(V['alpha'] > 0 & V['phi'] >= 0 & V['phi'] <= 2 * pi, 1, 0)
+      }
       n <- n + 1
     }
     if(n >= timeout_n){
       return(message("Failed to converge data prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
     }
   }
+  data_rhythmic <- nls_coefs['alpha', 'p_value'] < alpha_threshold
 
-  data_rhythmic <- alpha_p < alpha_threshold
-  V <- nls_coefs[, 'estimate']
   if(!controlVals$period_param){V['tau'] <- period}
 
   eq_expression <- create_formula(main_params = controlVals$main_params, decay_params=controlVals$decay_params)$f_equation
@@ -139,14 +137,6 @@ circa_single <- function (x,
                              amplitude_p = nls_coefs['alpha', 'p_value'], phase_radians = V['phi'],
                              peak_time_hours = (V['phi']/(2*pi)) * V['tau'],
                              period = V['tau'])
-
-  if(output_parms$peak_time_hours > V['tau']){
-    if(controlVals$period_param){
-      stop("Bad model fit. Phase was poorly estimated! If you can, assume a known period rather than parametrising it.")
-    }else{
-      stop("Bad model fit. Phase was poorly estimated!")
-    }
-  }
 
   if(return_figure){
     return(list(model=fit.nls, summary=output_parms, plot=fig_out))

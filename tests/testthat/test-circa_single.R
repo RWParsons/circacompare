@@ -1,9 +1,8 @@
 test_that("circa_single works", {
-  # set.seed(1)
-  tau <- 40
+  set.seed(42)
+  tau <- 15
   data_rhythmic <- make_data(phi1=0)
   out_rhythmic <- circa_single(x = data_rhythmic, col_time = "time", col_outcome = "measure")
-
 
   data_rhythmic$time <- data_rhythmic$time/24*tau
   out_rhythmic_free_tau <-
@@ -29,5 +28,6 @@ test_that("circa_single works", {
   tau_ll <- tau_est - 1.96*fit_tau['Std. Error']
   tau_ul <- tau_est + 1.96*fit_tau['Std. Error']
   expect_true(tau_est < tau_ul & tau_est > tau_ll) # period estimate is approx well estimated to be close to tau (ln 5)
+
 })
 
