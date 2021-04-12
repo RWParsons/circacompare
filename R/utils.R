@@ -145,11 +145,7 @@ create_formula <- function(main_params=c("k", "alpha", "phi"), decay_params=c(),
 
     if(pattern=="^tau"){
       if(length(component)==0){
-        if(eq){
-          component <- "(2*pi/period)*"
-        }else{
-          component <- ""
-        }
+        component <- ""
       }else{
         component <- paste0("(24/(", component, "))*")
       }
