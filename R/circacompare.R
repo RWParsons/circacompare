@@ -10,6 +10,7 @@
 #' @param period The period of the rhythm. For circadian rhythms, leave this as the default value, 24.
 #' @param alpha_threshold The level of alpha for which the presence of rhythmicity is considered. Default is 0.05.
 #' @param timeout_n The upper limit for the model fitting attempts. Default is 10,000.
+#' @param control \code{list}. Used to control the parameterization of the model.
 #'
 #' @return list
 #' @export
@@ -25,9 +26,20 @@ circacompare <- function(x,
                          col_outcome,
                          period = 24,
                          alpha_threshold = 0.05,
-                         timeout_n = 10000){
+                         timeout_n = 10000,
+                         control = list()){
   if(!"ggplot2" %in% utils::installed.packages()[, "Package"]){
     return(message("Please install 'ggplot2'"))
+  }
+
+  controlVals <- circacompare_control()
+  controlVals[names(control)] <- control
+
+  if(controlVals$period_param & !"tau" %in% controlVals$main_params){
+    controlVals$main_params <- c(controlVals$main_params, "tau")
+  }
+  if("tau" %in% controlVals$main_params){
+    controlVals$period_param=TRUE
   }
 
   x <- x[c(col_time, col_group, col_outcome)]
@@ -56,33 +68,51 @@ circacompare <- function(x,
                          sep = "")))
   }
 
-  x$time_r <- (x$time/24)*2*pi*(24/period)
+  if(!class(period) %in% c("numeric", "integer") & !controlVals$period_param){
+    return(message(paste0("The period argument must be a number representing the period of the rhythm in hours\n",
+                          "If you would like the period to be estimated as part of the model, use:\ncontrol=list(period_param=TRUE)")))
+  }
+
+  if(controlVals$period_param & !is.na(period)){
+    message(paste0("control$period_param is TRUE\n'period=", period, "' is being ignored.\nSet 'period=NA' to avoid this message"))
+  }
+
+  if(!controlVals$period_param){
+    x$time_r <- (x$time/24) * 2 * pi * (24/period)
+
+  }else{
+    x$time_r <- (x$time/24) * 2 * pi
+    if(is.null(controlVals$period_min) | is.null(controlVals$period_min)){
+      message(paste0("If you want the model to estimate the period using a parameter,",
+                     "you may get faster convergence if you provide an approximate range using 'period_min' and 'period_max' in control()",
+                     "\nCurrently assuming period is between: period_min=", controlVals$period_min,
+                     "and period_max=", controlVals$period_max))
+    }
+  }
+
   x$x_group <- ifelse(x$group == group_1_text, 0, 1)
 
-  comparison_model_success <- 0
-  comparison_model_timeout <- FALSE
-  g1_success <- 0
-  g2_success <- 0
-  g1_alpha_p <- NA
-  g2_alpha_p <- NA
-  n <- 0
   dat_group_1 <- x[x$group == group_1_text,]
   dat_group_2 <- x[x$group == group_2_text,]
 
-  g1_model <- model_each_group(data=dat_group_1, type="nls",
+  form_single <- create_formula(main_params=controlVals$main_params, decay_params=controlVals$decay_params)$formula
+
+  g1_model <- model_each_group(data=dat_group_1, type="nls", form=form_single,
+                               controlVals=controlVals,
                                args=list(
                                  timeout_n=timeout_n,
                                  alpha_threshold=alpha_threshold
                                ))
+
   if(g1_model$timeout){return(message("Failed to converge", group_1_text, " model prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))}
 
-  g2_model <- model_each_group(data=dat_group_1, type="nls",
+  g2_model <- model_each_group(data=dat_group_2, type="nls", form=form_single,
+                               controlVals=controlVals,
                                args=list(
                                  timeout_n=timeout_n,
                                  alpha_threshold=alpha_threshold
                                ))
   if(g2_model$timeout){return(message("Failed to converge", group_2_text, " model prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))}
-
 
   both_groups_rhythmic <- ifelse(g1_model$rhythmic & g2_model$rhythmic, TRUE, FALSE)
 
@@ -97,52 +127,40 @@ circacompare <- function(x,
     }
   }
   n <- 0
+
+  form_group <- create_formula(main_params=controlVals$main_params, decay_params=controlVals$decay_params, grouped_params=controlVals$grouped_params)$formula
+  comparison_model_success <- 0
+  comparison_model_timeout <- FALSE
   while(!comparison_model_success & !comparison_model_timeout){
-    starting_params <- list(
-      k=g1_model$k_estimate*2*stats::runif(1),
-      k1=(g2_model$k_estimate - g1_model$k_estimate)*2*stats::runif(1),
-      alpha=g1_model$alpha_estimate*2*stats::runif(1),
-      alpha1=(g2_model$alpha_estimate - g1_model$alpha_estimate)*2*stats::runif(1),
-      phi=g1_model$phi_estimate*2*stats::runif(1),
-      phi1=random_start_phi1(p=(g2_model$phi_estimate - g1_model$phi_estimate))
-    )
-    fit.nls <- try({stats::nls(measure~k+k1*x_group+(alpha+alpha1*x_group)*cos(time_r-(phi+phi1*x_group)),
-                               data = x,
-                               start = starting_params,
-                               stats::nls.control(maxiter = 100, minFactor = 1/10000)
+    starting_params <- start_list_grouped(g1=g1_model$model, g2=g2_model$model, grouped_params=controlVals$grouped_params)
+
+    fit.nls <- try({stats::nls(formula=form_group,
+                               data=x,
+                               start=starting_params,
+                               control=stats::nls.control(maxiter = 100, minFactor = 1/10000)
                                )},
-                   silent = TRUE)
-    if (class(fit.nls) == "try-error") {
-      n <- n + 1
-      comparison_model_timeout <- ifelse(n>timeout_n, TRUE, FALSE)
-    }else{
+                   silent = FALSE)
+
+    if (!class(fit.nls) == "try-error") {
+
       nls_coefs <- extract_model_coefs(fit.nls)
-      k_out <- stats::coef(fit.nls)[1]
-      k1_out <- stats::coef(fit.nls)[2]
-      k_out_p <- (summary(fit.nls)$coef)[1,4]
-      k1_out_p <- (summary(fit.nls)$coef)[2,4]
-
-      alpha_out <- stats::coef(fit.nls)[3]
-      alpha1_out <- stats::coef(fit.nls)[4]
-      alpha1_out_p <- (summary(fit.nls)$coef)[4,4]
-      phi_out <- stats::coef(fit.nls)[5]
-      phi1_out <- stats::coef(fit.nls)[6]
-      phi1_out_p <- (summary(fit.nls)$coef)[6,4]
-
-      comparison_model_success <- ifelse(nls_coefs['alpha','estimate']>0 & (nls_coefs['alpha','estimate'] + nls_coefs['alpha1','estimate']) > 0 & nls_coefs['phi1','estimate'] <pi & nls_coefs['phi1','estimate'] >-pi, 1, 0)
-      comparison_model_timeout <- ifelse(n>timeout_n, TRUE, FALSE)
-      n <- n + 1
+      V <- nls_coefs[, 'estimate']
+      comparison_model_success <- ifelse(V['alpha']>0 & (V['alpha']+V['alpha1'])>0 & V['phi1']<pi & V['phi1']>-pi, 1, 0)
     }
+    comparison_model_timeout <- ifelse(n>timeout_n, TRUE, FALSE)
+    n <- n + 1
   }
+  if(!controlVals$period_param){V['tau'] <- period}
   if(comparison_model_timeout){
     return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
   }
 
-  # Store the parameter estimate values in a named (numeric) vector for less verbose access
-  V <- nls_coefs[, 'estimate']
+  eq_expression <- create_formula(main_params=controlVals$main_params,
+                                  decay_params=controlVals$decay_params,
+                                  grouped_params=controlVals$grouped_params)$f_equation
+  eval(parse(text=eq_expression$g1))
+  eval(parse(text=eq_expression$g2))
 
-  eq_1 <- function(time){V['k'] + V['alpha']*cos((2*pi/period)*time - V['phi'])}
-  eq_2 <- function(time){V['k'] + V['k1'] + (V['alpha'] + V['alpha1'])*cos((2*pi/period)*time - (V['phi'] + V['phi1']))}
   fig_out <- ggplot2::ggplot(x, ggplot2::aes(time, measure)) +
     ggplot2::stat_function(ggplot2::aes(colour = group_1_text), fun = eq_1, size = 1) +
     ggplot2::stat_function(ggplot2::aes(colour = group_2_text), fun = eq_2, size = 1) +
@@ -151,8 +169,8 @@ circacompare <- function(x,
                                  values = c("blue", "red")) +
     ggplot2::labs(colour = 'Legend',
                   x = "time (hours)")+
-    ggplot2::xlim(min(floor(x$time/period) * period),
-                  max(ceiling(x$time/period) * period))
+    ggplot2::xlim(min(floor(x$time/V['tau']) * V['tau']),
+                  max(ceiling(x$time/V['tau']) * V['tau']))
 
   # Adjust phi_out so that -pi < phi_out < pi
   if(V['phi'] > pi){
@@ -165,29 +183,30 @@ circacompare <- function(x,
       V['phi'] <- V['phi'] + 2*pi
     }
   }
+
   baseline_diff_abs <- V['k']
   baseline_diff_pc <- ((V['k'] + V['k1'])/V['k'])*100 - 100
   amplitude_diff_abs <- V['alpha1']
   amplitude_diff_pc <-  ((V['alpha']+V['alpha1'])/V['alpha'])*100 - 100
-  g1_peak_time <- V['phi']*period/(2*pi)
-  g2_peak_time <- (V['phi']+V['phi1'])*period/(2*pi)
-  while(g1_peak_time > period | g1_peak_time < 0){
-    if(g1_peak_time > period){
-      g1_peak_time <- g1_peak_time - period
+  g1_peak_time <- V['phi']*V['tau']/(2*pi)
+  g2_peak_time <- (V['phi']+V['phi1'])*V['tau']/(2*pi)
+  while(g1_peak_time > V['tau'] | g1_peak_time < 0){
+    if(g1_peak_time > V['tau']){
+      g1_peak_time <- g1_peak_time - V['tau']
     }
     if(g1_peak_time<0){
-      g1_peak_time <- g1_peak_time + period
+      g1_peak_time <- g1_peak_time + V['tau']
     }
   }
-  while(g2_peak_time>period| g2_peak_time < 0){
-    if(g2_peak_time>period){
-      g2_peak_time <- g2_peak_time - period
+  while(g2_peak_time>V['tau']| g2_peak_time < 0){
+    if(g2_peak_time>V['tau']){
+      g2_peak_time <- g2_peak_time - V['tau']
     }
     if(g2_peak_time<0){
-      g2_peak_time <- g2_peak_time + period
+      g2_peak_time <- g2_peak_time + V['tau']
     }
   }
-  peak_time_diff <- V['phi1']*period/(2*pi)
+  peak_time_diff <- V['phi1']*V['tau']/(2*pi)
 
   output_parms <- data.frame(parameter = c("Both groups were rhythmic",
                                            paste("Presence of rhythmicity (p-value) for ", group_1_text, sep = ""),
@@ -211,3 +230,15 @@ circacompare <- function(x,
 
   return(list(plot=fig_out, table=output_parms, fit=fit.nls))
 }
+
+
+circacompare_control <- function(period_param=F, period_min=20, period_max=28,
+                                 main_params=c("k", "alpha", "phi"),
+                                 grouped_params=c("k", "alpha", "phi"),
+                                 decay_params=c()){
+  list(period_param=period_param, period_min=period_min, period_max=period_max,
+       main_params=main_params, grouped_params=grouped_params,
+       decay_params=decay_params)
+}
+
+

@@ -1,27 +1,31 @@
-utils::globalVariables(c('time', 'measure', 'group', 'eq'))
+utils::globalVariables(c('time', 'measure', 'group', 'eq', 'eq_1', 'eq_2'))
 
 extract_model_coefs <- function(model){
   if("nls" %in% class(model)){
-    results <- summary(model)$coef[, c(1, 4)]
-    dimnames(results)[[2]] <- c("estimate", "p_value")
+    results <- summary(model)$coef[, c(1, 2, 4)]
   }
   if("nlme" %in% class(model)){
-    results <- summary(model)$tTable[, c(1, 5)]
-    dimnames(results)[[2]] <- c("estimate", "p_value")
+    results <- summary(model)$tTable[, c(1, 2, 5)]
   }
+  dimnames(results)[[2]] <- c("estimate", "std_error", "p_value")
   return(results)
 }
 
 
-model_each_group <- function(data, type, args=list(timeout_n=10000, alpha_threshold=0.05)){
+model_each_group <- function(data, type, form=stats::as.formula("measure~k+alpha*cos(time_r-phi)"),
+                             controlVals=list(),
+                             args=list(timeout_n=10000, alpha_threshold=0.05)){
   success <- FALSE
   n <- 0
   while(!success){
-    starting_params <- c(
+    starting_params <- list(
       k=mean(data$measure, na.rm = TRUE)*2*stats::runif(1),
       alpha=(max(data$measure, na.rm = TRUE) - min(data$measure, na.rm = TRUE)) * stats::runif(1),
       phi=stats::runif(1)*6.15 - 3.15
     )
+    if(length(controlVals)!=0){
+      starting_params <- start_list(outcome=data$measure, controlVals=controlVals)
+    }
 
     if(type=="nlme"){
       ranefs <- intersect(c("k", "alpha", "phi"), args$randomeffects)
@@ -30,20 +34,23 @@ model_each_group <- function(data, type, args=list(timeout_n=10000, alpha_thresh
         }else{
           ranefs_formula <- NULL
       }
-      fit <- try({nlme::nlme(model = measure~k+alpha*cos(time_r-phi),
+      fit <- try({nlme::nlme(#model = measure~k+alpha*cos(time_r-phi),
+                             model = form,
                              random = ranefs_formula,
                              fixed = k+alpha+phi~1,
                              data = data,
-                             start = starting_params,
+                             start = unlist(starting_params),
                              method = args$nlme_method,
                              control = args$nlme_control,
                              verbose = args$verbose)},
                  silent = ifelse(args$verbose, FALSE, TRUE)
       )
     }else if(type=="nls"){
-      fit <- try({stats::nls(measure~k + alpha*cos(time_r-phi),
+      fit <- try({stats::nls(formula=form,# measure~k + alpha*cos(time_r-phi),
                              data = data,
-                             start = lapply(split(starting_params, names(starting_params)), unname))},
+                             # start = lapply(split(starting_params, names(starting_params)), unname))
+                             start = starting_params)
+        },
                  silent = TRUE)
     }
 
@@ -156,11 +163,10 @@ create_formula <- function(main_params=c("k", "alpha", "phi"), decay_params=c(),
   res_equation <- paste0(build_component("^k", eq=T), "+(", build_component("^alpha", eq=T),
                          ")*cos(", build_component("^tau", eq=T), "time-(", build_component("^phi", eq=T), "))")
 
-
   if(length(grouped_params)>0){
     res_equation <- list(
-      g1=paste0("eq1 <- function(time) {", gsub("\\+V\\['[a-z]*1'\\]", "", res_equation), "}"),
-      g2=paste0("eq2 <- function(time) {", res_equation, "}")
+      g1=paste0("eq_1 <- function(time) {time<-(time/24)*2*pi;return(", gsub("\\+V\\['[a-z]*1'\\]", "", res_equation), ")}"),
+      g2=paste0("eq_2 <- function(time) {time<-(time/24)*2*pi;return(", res_equation, ")}")
     )
   }else{
     res_equation <- paste0("eq <- function(time) {time<-(time/24)*2*pi;return(", res_equation, ")}")
@@ -195,3 +201,40 @@ start_list <- function(outcome, controlVals){
   return(res)
 }
 
+
+start_list_grouped <- function(g1, g2, grouped_params=c("k", "alpha", "phi")){
+  V_g1 <- extract_model_coefs(g1)[, 'estimate']
+  se_g1 <- extract_model_coefs(g1)[, 'std_error']
+  V_g2 <- extract_model_coefs(g2)[, 'estimate']
+  se_g2 <- extract_model_coefs(g2)[, 'std_error']
+
+  params <- names(V_g1)
+
+  vec <- rep(0, length(params))
+  names(vec) <- params
+
+  for(gp in grouped_params){
+    vec[gp] <- V_g1[gp]*2*stats::runif(1)
+    if(gp=="phi"){
+      vec[paste0(gp, "1")] <- random_start_phi1(p=(V_g2[gp] - V_g1[gp]))
+    }else{
+      vec[paste0(gp, "1")] <- (V_g2[gp] - V_g1[gp])*2*stats::runif(1)
+    }
+  }
+
+  for(shared_param in params[!params %in% grouped_params]){
+    vec[shared_param] <- stats::runif(n=1, V_g1[shared_param], V_g1[shared_param])
+  }
+
+  order <- c(
+    names(vec)[grepl("^k", names(vec))],
+    names(vec)[grepl("^alpha", names(vec))],
+    names(vec)[grepl("^tau", names(vec))],
+    names(vec)[grepl("^phi", names(vec))]
+  )
+  lst <- as.list(vec)
+
+  lst <- lst[order]
+  # return(as.list(vec))
+  return(lst)
+}

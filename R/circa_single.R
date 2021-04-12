@@ -115,20 +115,18 @@ circa_single <- function (x,
   eq_expression <- create_formula(main_params = controlVals$main_params, decay_params=controlVals$decay_params)$f_equation
   eval(parse(text=eq_expression))
 
+
   if(return_figure){
-    if(data_rhythmic) {
-      fig_out <- ggplot2::ggplot(x, ggplot2::aes(time, measure)) +
+    p <- ggplot2::ggplot(x, ggplot2::aes(time, measure)) +
+      ggplot2::geom_point() +
+      ggplot2::xlim(min(floor(x$time/period) * period),
+                    max(ceiling(x$time/period) * period))
+    if(data_rhythmic){
+      fig_out <- p +
         ggplot2::stat_function(fun = eq, size = 1) +
-        ggplot2::geom_point() +
-        ggplot2::xlim(min(floor(x$time/period) * period),
-                      max(ceiling(x$time/period) * period)) +
         ggplot2::labs(subtitle = "Data is rhythmic", x = "time (hours)")
-    }
-    else{
-      fig_out <- ggplot2::ggplot(x, ggplot2::aes(time, measure)) +
-        ggplot2::geom_point() +
-        ggplot2::xlim(min(floor(x$time/period) * period),
-                      max(ceiling(x$time/period) * period)) +
+    }else{
+      fig_out <- p +
         ggplot2::labs(subtitle = "Data is arrhythmic", x = "time (hours)")
     }
   }

@@ -1,6 +1,13 @@
 test_that("circacompare() fits a good model to generated data", {
   df <- make_data(phi1=12)
   out <- circacompare(x = df, col_time = "time", col_group = "group", col_outcome = "measure")
+  out
+
+  # out <- circacompare(x = df, col_time = "time", col_group = "group", col_outcome = "measure",
+  #                     period=NA,
+  #                     control = list(main_params=c("k", "alpha", "tau", "phi"),
+  #                                    grouped_params=c("k",  "alpha", "phi")))
+
 
   both_groups_rhythmic <- as.logical(out[[2]][1,2])
   phase_shift_estimated_within_2hours <- abs(abs(out[[2]][14,2]) - 12) < 2
