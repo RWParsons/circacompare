@@ -12,8 +12,12 @@ test_that("circacompare() fits a good model to generated data", {
                                                   grouped_params=c("k",  "alpha", "phi")))
   out_tau_adjusted$plot
 
-  both_groups_rhythmic <- as.logical(out$table[1, 'value'])
-  phase_shift_estimated_within_2hours <- abs(abs(out$table[14,'value']) - phi1_in) < 2
+  both_groups_rhythmic <- as.logical(
+    out$table[1, 'value']<0.05 &
+    out$table[2, 'value']<0.05
+    )
+
+  phase_shift_estimated_within_2hours <- abs(abs(out$table[13,'value']) - phi1_in) < 2
 
   expect_true(both_groups_rhythmic)
   expect_true(phase_shift_estimated_within_2hours)

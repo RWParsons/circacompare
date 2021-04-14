@@ -100,8 +100,8 @@ random_start_phi1 <- function(p){
 
 
 create_formula <- function(main_params=c("k", "alpha", "phi"), decay_params=c(), grouped_params=c()){
-  if(length(grouped_params[!grouped_params %in% main_params])>0){
-    stop("All grouped parameters must be within the main parameters.")
+  if(length(grouped_params[!grouped_params %in% c(main_params, paste0(decay_params, "_decay"))])>0){
+    stop("All grouped parameters must be within the main or decay parameters.")
   }
   if(all(c("phi", "tau") %in% grouped_params)){
     stop("Either phase or period can have grouped effects, but not both.")
@@ -268,3 +268,168 @@ assess_model_estimates <- function(param_estimates){
   return(res)
 
 }
+
+
+circa_summary <- function(model, period, control,
+                          g1=NULL, g2=NULL, g1_text=NULL, g2_text=NULL){
+  grouped <- ifelse(length(control$grouped_params)>0, TRUE, FALSE)
+  row_adder <- function(data, parameter, value){
+    new_row <- data.frame(parameter=parameter, value=value)
+    row.names(new_row) <- NULL
+    return(rbind(data, new_row))
+  }
+
+  coefs <- extract_model_coefs(model)
+  V <- coefs[, 'estimate']
+
+  if(!"tau" %in% names(V)){
+    V["tau"] <- period
+  }
+
+  if("phi" %in% names(V)){
+    if(V['phi'] > pi){
+      while(V['phi'] > pi){
+        V['phi'] <- V['phi'] - 2*pi
+      }
+    }
+    if(V['phi'] < -pi){
+      while(V['phi'] < -pi){
+        V['phi'] <- V['phi'] + 2*pi
+      }
+    }
+  }
+
+
+  peak_time_diff <- V['phi1']*V['tau']/(2*pi)
+
+
+  res <- data.frame(parameter=c(), value=c())
+  if(!grouped){
+    res <- row_adder(res, "rhythmic_p", coefs['alpha', 'p_value'])
+    res <- row_adder(res, "mesor", V['k'])
+    if("k_decay" %in% names(V)){res <- row_adder(res, "mesor_decay", V['k_decay'])}
+    res <- row_adder(res, "amplitude", V['alpha'])
+    if("alpha_decay" %in% names(V)){res <- row_adder(res, "alpha_decay", V['alpha_decay'])}
+    res <- row_adder(res, "phase_radians", V['phi'])
+    if("phi_decay" %in% names(V)){res <- row_adder(res, "phase_radians_decay", V['phi_decay'])}
+    res <- row_adder(res, "peak_time_hours", (V['phi']/(2*pi)) * V['tau'])
+    res <- row_adder(res, "period", V['tau'])
+    if("tau_decay" %in% names(V)){res <- row_adder(res, "period_decay", V['tau_decay'])}
+    return(res)
+  }
+
+  res <- row_adder(res, paste0("Presence of rhythmicity (p-value) for ", g1_text), g1$alpha_p)
+  res <- row_adder(res, paste0("Presence of rhythmicity (p-value) for ", g2_text), g2$alpha_p)
+
+  if("k1" %in% names(V)){
+    res <- row_adder(res, paste0(g1_text, " mesor estimate"), V['k'])
+    res <- row_adder(res, paste0(g2_text, " mesor estimate"), V['k']+V['k1'])
+    res <- row_adder(res, "Mesor difference estimate", V['k1'])
+    res <- row_adder(res, "P-value for mesor difference", coefs['k1', 'p_value'])
+  }else{
+    res <- row_adder(res, "Shared mesor estimate", V['k'])
+  }
+  if("k_decay" %in% names(V)){
+    if("k_decay1" %in% names(V)){
+      res <- row_adder(res, paste0(g1_text, " mesor decay estimate"), V['k_decay'])
+      res <- row_adder(res, paste0(g2_text, " mesor decay estimate"), V['k_decay']+V['k_decay1'])
+      res <- row_adder(res, "Mesor decay difference estimate", V['k_decay1'])
+      res <- row_adder(res, "P-value for mesor decay difference", coefs['k_decay1', 'p_value'])
+    }else{
+      res <- row_adder(res, "Shared mesor decay estimate", V['k_decay'])
+    }
+  }
+
+  if("alpha1" %in% names(V)){
+    res <- row_adder(res, paste0(g1_text, " amplitude estimate"), V['alpha'])
+    res <- row_adder(res, paste0(g2_text, " amplitude estimate"), V['alpha']+V['alpha1'])
+    res <- row_adder(res, "Amplitude difference estimate", V['alpha1'])
+    res <- row_adder(res, "P-value for amplitude difference", coefs['alpha1', 'p_value'])
+  }else{
+    res <- row_adder(res, "Shared amplitude estimate", V['alpha'])
+  }
+  if("alpha_decay" %in% names(V)){
+    if("alpha_decay1" %in% names(V)){
+      res <- row_adder(res, paste0(g1_text, " amplitude decay estimate"), V['alpha_decay'])
+      res <- row_adder(res, paste0(g2_text, " amplitude decay estimate"), V['alpha_decay']+V['alpha_decay1'])
+      res <- row_adder(res, "Amplitude decay difference estimate", V['alpha_decay1'])
+      res <- row_adder(res, "P-value for amplitude decay difference", coefs['alpha_decay1', 'p_value'])
+    }else{
+      res <- row_adder(res, "Shared amplitude decay estimate", V['alpha_decay'])
+    }
+  }
+
+  peak_time <- V['phi']*V['tau']/(2*pi)
+  while(peak_time > V['tau'] | peak_time < 0){
+    if(peak_time > V['tau']){
+      peak_time <- peak_time - V['tau']
+    }
+    if(peak_time<0){
+      peak_time <- peak_time + V['tau']
+    }
+  }
+  if("phi1" %in% names(V)){
+    peak_time_diff <- V['phi1']*V['tau']/(2*pi)
+    g2_peak_time <- (V['phi']+V['phi1'])*V['tau']/(2*pi)
+    while(g2_peak_time>V['tau']| g2_peak_time < 0){
+      if(g2_peak_time>V['tau']){
+        g2_peak_time <- g2_peak_time - V['tau']
+      }
+      if(g2_peak_time<0){
+        g2_peak_time <- g2_peak_time + V['tau']
+      }
+    }
+    res <- row_adder(res, paste0(g1_text, " peak time hours"), peak_time)
+    res <- row_adder(res, paste0(g2_text, " peak time hours"), g2_peak_time)
+    res <- row_adder(res, "Phase difference estimate", peak_time_diff)
+    res <- row_adder(res, "P-value for difference in phase", coefs['phi1', 'p_value'])
+  }else{
+    res <- row_adder(res, "Shared  peak time hours", peak_time)
+  }
+  if("phi_decay" %in% names(V)){
+    if("phi_decay1" %in% names(V)){
+      res <- row_adder(res, paste0(g1_text, " phase decay estimate"), V['phi_decay'])
+      res <- row_adder(res, paste0(g2_text, " phase decay estimate"), V['phi_decay']+V['phi_decay1'])
+      res <- row_adder(res, "Phase decay difference estimate", V['phi_decay1'])
+      res <- row_adder(res, "P-value for phase decay difference", coefs['phi_decay1', 'p_value'])
+    }else{
+      res <- row_adder(res, "Shared phase decay estimate", V['phi_decay'])
+    }
+  }
+
+  if("tau1" %in% names(V)){
+    res <- row_adder(res, paste0(g1_text, " period estimate"), V['tau'])
+    res <- row_adder(res, paste0(g2_text, " period estimate"), V['tau']+V['tau1'])
+    res <- row_adder(res, "Period difference estimate (hours)", V['tau1'])
+    res <- row_adder(res, "P-value for difference in period", coefs[V['tau1'], 'p_value'])
+  }else{
+    res <- row_adder(res, "Shared period estimate", V['tau'])
+  }
+  if("tau_decay" %in% names(V)){
+    if("tau_decay1" %in% names(V)){
+      res <- row_adder(res, paste0(g1_text, " period decay estimate"), V['tau_decay'])
+      res <- row_adder(res, paste0(g2_text, " period decay estimate"), V['tau_decay']+V['tau_decay1'])
+    }else{
+      res <- row_adder(res, "Shared period decay estimate", V['tau_decay'])
+    }
+  }
+
+  return(res)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
