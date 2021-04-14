@@ -96,12 +96,7 @@ circa_single <- function (x,
     else{
       nls_coefs <- extract_model_coefs(fit.nls)
       V <- nls_coefs[, 'estimate']
-
-      if(controlVals$period_param){
-        success <- ifelse(V['alpha'] > 0 & V['phi'] >= 0 & V['phi'] <= 2 * pi & V['tau'] > 0 , 1, 0)
-      }else{
-        success <- ifelse(V['alpha'] > 0 & V['phi'] >= 0 & V['phi'] <= 2 * pi, 1, 0)
-      }
+      success <- assess_model_estimates(param_estimates=V)
       n <- n + 1
     }
     if(n >= timeout_n){

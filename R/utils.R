@@ -234,3 +234,37 @@ start_list_grouped <- function(g1, g2, grouped_params=c("k", "alpha", "phi")){
   # return(as.list(vec))
   return(lst)
 }
+
+
+assess_model_estimates <- function(param_estimates){
+  res <- TRUE
+
+  if("alpha" %in% names(param_estimates)){
+    res <- ifelse(param_estimates['alpha']<0, FALSE, res)
+  }
+
+  if("alpha1" %in% names(param_estimates)){
+    res <- ifelse(param_estimates['alpha'] + param_estimates['alpha1']<0, FALSE, res)
+  }
+
+  if("phi" %in% names(param_estimates)){
+    if("phi1" %in% names(param_estimates)){
+      res <- ifelse(param_estimates['phi1']<(-pi) | param_estimates['phi1']>pi,
+                    FALSE, res)
+    }else{ # TODO test whether including this for all cases of phi (rather than only those where phi1 is not present) affects ability to succeed
+      res <- ifelse(param_estimates['phi']<0 | param_estimates['phi']>2*pi,
+                    FALSE, res)
+    }
+  }
+
+  if("tau" %in% names(param_estimates)){
+    res <- ifelse(param_estimates['tau']<0, FALSE, res)
+  }
+
+  if("tau1" %in% names(param_estimates)){
+    res <- ifelse(param_estimates['tau'] + param_estimates['tau1']<0, FALSE, res)
+  }
+
+  return(res)
+
+}

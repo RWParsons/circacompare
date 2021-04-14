@@ -24,4 +24,24 @@ test_that("circacompare() fits a good model to generated data", {
   tau_ll <- tau_est - 1.96*fit_tau['Std. Error']
   tau_ul <- tau_est + 1.96*fit_tau['Std. Error']
   expect_true(tau_in < tau_ul & tau_in > tau_ll) # period estimate is approx well estimated to be close to tau (ln 5)
+
+
+  x1 <- make_data(k1=3, alpha1=10, phi1=0, seed=NULL)
+  x2 <- make_data(k1=3, alpha1=10, phi1=0, seed=NULL)
+  x2$time <- x2$time + 24
+  x3 <- make_data(k1=3, alpha1=10, phi1=0, seed=NULL)
+  x3$time <- x3$time + 48
+  df <- rbind(x1, x2, x3)
+
+  df$measure[df$group=="g2"] <- df$measure[df$group=="g2"]*exp(-0.03*df$time[df$group=="g2"])
+
+  circacompare(x=df, "time", "group", "measure")
+  circacompare(x=df, "time", "group", "measure",
+               control=list(
+                 main_params=c("k", "alpha", "phi"),
+                 decay_params=c("alpha"),
+                 grouped_params=c("k", "alpha", "phi")
+               ))
+
+
 })

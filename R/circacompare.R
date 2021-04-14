@@ -129,9 +129,10 @@ circacompare <- function(x,
   n <- 0
 
   form_group <- create_formula(main_params=controlVals$main_params, decay_params=controlVals$decay_params, grouped_params=controlVals$grouped_params)$formula
-  comparison_model_success <- 0
+  comparison_model_success <- FALSE
   comparison_model_timeout <- FALSE
   while(!comparison_model_success & !comparison_model_timeout){
+
     starting_params <- start_list_grouped(g1=g1_model$model, g2=g2_model$model, grouped_params=controlVals$grouped_params)
 
     fit.nls <- try({stats::nls(formula=form_group,
@@ -142,10 +143,9 @@ circacompare <- function(x,
                    silent = FALSE)
 
     if (!class(fit.nls) == "try-error") {
-
       nls_coefs <- extract_model_coefs(fit.nls)
       V <- nls_coefs[, 'estimate']
-      comparison_model_success <- ifelse(V['alpha']>0 & (V['alpha']+V['alpha1'])>0 & V['phi1']<pi & V['phi1']>-pi, 1, 0)
+      comparison_model_success <- assess_model_estimates(param_estimates=V)
     }
     comparison_model_timeout <- ifelse(n>timeout_n, TRUE, FALSE)
     n <- n + 1
@@ -189,7 +189,7 @@ circacompare <- function(x,
   amplitude_diff_abs <- V['alpha1']
   amplitude_diff_pc <-  ((V['alpha']+V['alpha1'])/V['alpha'])*100 - 100
   g1_peak_time <- V['phi']*V['tau']/(2*pi)
-  g2_peak_time <- (V['phi']+V['phi1'])*V['tau']/(2*pi)
+
   while(g1_peak_time > V['tau'] | g1_peak_time < 0){
     if(g1_peak_time > V['tau']){
       g1_peak_time <- g1_peak_time - V['tau']
@@ -198,6 +198,8 @@ circacompare <- function(x,
       g1_peak_time <- g1_peak_time + V['tau']
     }
   }
+
+  g2_peak_time <- (V['phi']+V['phi1'])*V['tau']/(2*pi)
   while(g2_peak_time>V['tau']| g2_peak_time < 0){
     if(g2_peak_time>V['tau']){
       g2_peak_time <- g2_peak_time - V['tau']
@@ -207,6 +209,7 @@ circacompare <- function(x,
     }
   }
   peak_time_diff <- V['phi1']*V['tau']/(2*pi)
+
 
   output_parms <- data.frame(parameter = c("Both groups were rhythmic",
                                            paste("Presence of rhythmicity (p-value) for ", group_1_text, sep = ""),
