@@ -155,9 +155,11 @@ circacompare <- function(x,
     return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
   }
 
+
   eq_expression <- create_formula(main_params=controlVals$main_params,
                                   decay_params=controlVals$decay_params,
                                   grouped_params=controlVals$grouped_params)$f_equation
+
   eval(parse(text=eq_expression$g1))
   eval(parse(text=eq_expression$g2))
 
@@ -172,66 +174,10 @@ circacompare <- function(x,
     ggplot2::xlim(min(floor(x$time/V['tau']) * V['tau']),
                   max(ceiling(x$time/V['tau']) * V['tau']))
 
-  # Adjust phi_out so that -pi < phi_out < pi
-  if(V['phi'] > pi){
-    while(V['phi'] > pi){
-      V['phi'] <- V['phi'] - 2*pi
-    }
-  }
-  if(V['phi'] < -pi){
-    while(V['phi'] < -pi){
-      V['phi'] <- V['phi'] + 2*pi
-    }
-  }
-
-  baseline_diff_abs <- V['k']
-  baseline_diff_pc <- ((V['k'] + V['k1'])/V['k'])*100 - 100
-  amplitude_diff_abs <- V['alpha1']
-  amplitude_diff_pc <-  ((V['alpha']+V['alpha1'])/V['alpha'])*100 - 100
-  g1_peak_time <- V['phi']*V['tau']/(2*pi)
-
-  while(g1_peak_time > V['tau'] | g1_peak_time < 0){
-    if(g1_peak_time > V['tau']){
-      g1_peak_time <- g1_peak_time - V['tau']
-    }
-    if(g1_peak_time<0){
-      g1_peak_time <- g1_peak_time + V['tau']
-    }
-  }
-
-  g2_peak_time <- (V['phi']+V['phi1'])*V['tau']/(2*pi)
-  while(g2_peak_time>V['tau']| g2_peak_time < 0){
-    if(g2_peak_time>V['tau']){
-      g2_peak_time <- g2_peak_time - V['tau']
-    }
-    if(g2_peak_time<0){
-      g2_peak_time <- g2_peak_time + V['tau']
-    }
-  }
-  peak_time_diff <- V['phi1']*V['tau']/(2*pi)
-
-
-  output_parms <- data.frame(parameter = c("Both groups were rhythmic",
-                                           paste("Presence of rhythmicity (p-value) for ", group_1_text, sep = ""),
-                                           paste("Presence of rhythmicity (p-value) for ", group_2_text, sep = ""),
-                                           paste(group_1_text, " mesor estimate", sep = ""),
-                                           paste(group_2_text, " mesor estimate", sep = ""),
-                                           "Mesor difference estimate",
-                                           "P-value for mesor difference",
-                                           paste(group_1_text, " amplitude estimate", sep = ""),
-                                           paste(group_2_text, " amplitude estimate", sep = ""),
-                                           "Amplitude difference estimate",
-                                           "P-value for amplitude difference",
-                                           paste(group_1_text, " peak time", sep = ""),
-                                           paste(group_2_text, " peak time", sep = ""),
-                                           "Phase difference estimate",
-                                           "P-value for difference in phase"),
-
-                             value = c(both_groups_rhythmic, g1_model$alpha_p, g2_model$alpha_p, V['k'], (V['k'] + V['k1']), V['k1'],
-                                       nls_coefs['k1', 'p_value'], V['alpha'], V['alpha'] + V['alpha1'], V['alpha1'], nls_coefs['alpha1', 'p_value'],
-                                       g1_peak_time, g2_peak_time, peak_time_diff, nls_coefs['phi1', 'p_value']))
-
-  return(list(plot=fig_out, table=output_parms, fit=fit.nls))
+  results_summary <-
+    circa_summary(model=fit.nls, period=period, control=controlVals,
+                  g1=g1_model, g2=g2_model, g1_text=group_1_text, g2_text=group_2_text)
+  return(list(plot=fig_out, table=results_summary, fit=fit.nls))
 }
 
 

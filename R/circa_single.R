@@ -131,6 +131,7 @@ circa_single <- function (x,
                              peak_time_hours = (V['phi']/(2*pi)) * V['tau'],
                              period = V['tau'])
 
+
   if(return_figure){
     return(list(model=fit.nls, summary=output_parms, plot=fig_out))
   }else{
