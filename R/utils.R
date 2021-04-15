@@ -34,8 +34,7 @@ model_each_group <- function(data, type, form=stats::as.formula("measure~k+alpha
         }else{
           ranefs_formula <- NULL
       }
-      fit <- try({nlme::nlme(#model = measure~k+alpha*cos(time_r-phi),
-                             model = form,
+      fit <- try({nlme::nlme(model = form,
                              random = ranefs_formula,
                              fixed = k+alpha+phi~1,
                              data = data,
@@ -46,9 +45,8 @@ model_each_group <- function(data, type, form=stats::as.formula("measure~k+alpha
                  silent = ifelse(args$verbose, FALSE, TRUE)
       )
     }else if(type=="nls"){
-      fit <- try({stats::nls(formula=form,# measure~k + alpha*cos(time_r-phi),
+      fit <- try({stats::nls(formula=form,
                              data = data,
-                             # start = lapply(split(starting_params, names(starting_params)), unname))
                              start = starting_params)
         },
                  silent = TRUE)
@@ -260,7 +258,7 @@ assess_model_estimates <- function(param_estimates){
     if("phi1" %in% names(param_estimates)){
       res <- ifelse(param_estimates['phi1']<(-pi) | param_estimates['phi1']>pi,
                     FALSE, res)
-    }else{ # TODO test whether including this for all cases of phi (rather than only those where phi1 is not present) affects ability to succeed
+    }else{
       res <- ifelse(param_estimates['phi']<0 | param_estimates['phi']>2*pi,
                     FALSE, res)
     }
