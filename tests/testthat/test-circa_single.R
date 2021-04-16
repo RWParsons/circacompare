@@ -19,11 +19,12 @@ test_that("circa_single works", {
   out_arrhythmic <- circa_single(x = data_arrhythmic, col_time = "time", col_outcome = "measure")
 
   expect_true(class(out_rhythmic) == "list") # no errors when running circa_single()
-  expect_true(out_rhythmic[[2]]['amplitude_p'] < 0.01)   # amplitude_p for rhythmic data is small
-  expect_true(out_arrhythmic[[2]]['amplitude_p'] > 0.05) # amplitude_p for arrhythmic data is large.
+  expect_true(out_rhythmic$summary[1,2] < 0.01)   # amplitude_p for rhythmic data is small
+
+  expect_true(out_arrhythmic$summary[1,2] > 0.05) # amplitude_p for arrhythmic data is large.
 
 
-  fit_tau <- summary(out_rhythmic_free_tau[[1]])$coef['tau', ]
+  fit_tau <- summary(out_rhythmic_free_tau$fit)$coef['tau', ]
   tau_est <- fit_tau['Estimate']
   tau_ll <- tau_est - 1.96*fit_tau['Std. Error']
   tau_ul <- tau_est + 1.96*fit_tau['Std. Error']

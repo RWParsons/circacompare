@@ -177,7 +177,8 @@ circacompare <- function(x,
   results_summary <-
     circa_summary(model=fit.nls, period=period, control=controlVals,
                   g1=g1_model, g2=g2_model, g1_text=group_1_text, g2_text=group_2_text)
-  return(list(plot=fig_out, table=results_summary, fit=fit.nls))
+
+  return(list(plot=fig_out, summary=results_summary, fit=fit.nls))
 }
 
 

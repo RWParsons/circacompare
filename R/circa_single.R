@@ -66,7 +66,6 @@ circa_single <- function (x,
     message(paste0("control$period_param is TRUE\n'period=", period, "' is being ignored.\nSet 'period=NA' to avoid this message"))
   }
 
-
   if(!controlVals$period_param){
     x$time_r <- (x$time/24) * 2 * pi * (24/period)
 
@@ -126,18 +125,16 @@ circa_single <- function (x,
     }
   }
 
-  output_parms <- data.frame(mesor = V['k'], amplitude = V['alpha'],
-                             amplitude_p = nls_coefs['alpha', 'p_value'], phase_radians = V['phi'],
-                             peak_time_hours = (V['phi']/(2*pi)) * V['tau'],
-                             period = V['tau'])
-
+  results_summary <-
+    circa_summary(model=fit.nls, period=period, control=controlVals)
 
   if(return_figure){
-    return(list(model=fit.nls, summary=output_parms, plot=fig_out))
+    return(list(fit=fit.nls, summary=results_summary, plot=fig_out))
   }else{
-    return(list(model=fit.nls, summary=output_parms))
+    return(list(fit=fit.nls, summary=results_summary))
   }
 }
+
 
 circa_single_control <- function(period_param=F, period_min=20, period_max=28,
                                  main_params=c("k", "alpha", "phi"), decay_params=c()){
