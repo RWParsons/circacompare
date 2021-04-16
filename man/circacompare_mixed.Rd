@@ -16,7 +16,8 @@ circacompare_mixed(
   nlme_control = list(),
   nlme_method = "REML",
   verbose = FALSE,
-  timeout_n = 10000
+  timeout_n = 10000,
+  control = list()
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ circacompare_mixed(
 \item{verbose}{An optional logical value. If \code{TRUE} information on the evolution of the iterative algorithm is printed. Default is \code{FALSE}.}
 
 \item{timeout_n}{The upper limit for the model fitting attempts. Default is \code{10000}.}
+
+\item{control}{\code{list}. Used to control the parameterization of the model.}
 }
 \value{
 list

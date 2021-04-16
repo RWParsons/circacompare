@@ -49,9 +49,6 @@ circacompare <- function(x,
     return(message("Your grouping variable had more or less than 2 levels! \nThis function is used to compare two groups of data. \nTo avoid me having to guess, please send data with only two possible values in your grouping variable to this function."))
   }
 
-  group_1_text <- levels(as.factor(x$group))[1]
-  group_2_text <- levels(as.factor(x$group))[2]
-
   if(!class(x$time) %in% c("numeric", "integer")){
     return(message(paste("The time variable which you gave was a '",
                          class(x$time),
@@ -79,7 +76,6 @@ circacompare <- function(x,
 
   if(!controlVals$period_param){
     x$time_r <- (x$time/24) * 2 * pi * (24/period)
-
   }else{
     x$time_r <- (x$time/24) * 2 * pi
     if(is.null(controlVals$period_min) | is.null(controlVals$period_min)){
@@ -90,8 +86,9 @@ circacompare <- function(x,
     }
   }
 
+  group_1_text <- levels(as.factor(x$group))[1]
+  group_2_text <- levels(as.factor(x$group))[2]
   x$x_group <- ifelse(x$group == group_1_text, 0, 1)
-
   dat_group_1 <- x[x$group == group_1_text,]
   dat_group_2 <- x[x$group == group_2_text,]
 

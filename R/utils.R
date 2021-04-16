@@ -18,25 +18,16 @@ model_each_group <- function(data, type, form=stats::as.formula("measure~k+alpha
   success <- FALSE
   n <- 0
   while(!success){
-    starting_params <- list(
-      k=mean(data$measure, na.rm = TRUE)*2*stats::runif(1),
-      alpha=(max(data$measure, na.rm = TRUE) - min(data$measure, na.rm = TRUE)) * stats::runif(1),
-      phi=stats::runif(1)*6.15 - 3.15
-    )
-    if(length(controlVals)!=0){
-      starting_params <- start_list(outcome=data$measure, controlVals=controlVals)
-    }
+    starting_params <- start_list(outcome=data$measure, controlVals=controlVals)
+    # use the nls function below if the only random effects are on group parameters
+    if(type=="nlme" & length(args$randomeffects)>0){
+      ranefs <- intersect(controlVals$non_grouped_params, args$randomeffects)
+      ranefs_formula <- stats::formula(paste(paste0(ranefs, collapse="+"), "~ 1 | id"))
+      fixefs_formula <- stats::formula(paste(paste0(controlVals$non_grouped_params, collapse="+"), "~ 1 | id"))
 
-    if(type=="nlme"){
-      ranefs <- intersect(c("k", "alpha", "phi"), args$randomeffects)
-      if(length(ranefs)!=0){
-        ranefs_formula <- stats::formula(paste(paste0(ranefs, collapse="+"), "~ 1 | id"))
-        }else{
-          ranefs_formula <- NULL
-      }
       fit <- try({nlme::nlme(model = form,
                              random = ranefs_formula,
-                             fixed = k+alpha+phi~1,
+                             fixed = fixefs_formula,
                              data = data,
                              start = unlist(starting_params),
                              method = args$nlme_method,
@@ -44,12 +35,12 @@ model_each_group <- function(data, type, form=stats::as.formula("measure~k+alpha
                              verbose = args$verbose)},
                  silent = ifelse(args$verbose, FALSE, TRUE)
       )
-    }else if(type=="nls"){
+    }else{
       fit <- try({stats::nls(formula=form,
                              data = data,
                              start = starting_params)
         },
-                 silent = TRUE)
+        silent = TRUE)
     }
 
     if("try-error" %in% class(fit)){

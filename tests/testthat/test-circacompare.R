@@ -10,7 +10,6 @@ test_that("circacompare() fits a good model to generated data", {
                                    period=NA,
                                    control = list(main_params=c("k", "alpha", "tau", "phi"),
                                                   grouped_params=c("k",  "alpha", "phi")))
-  out_tau_adjusted$plot
 
   both_groups_rhythmic <- as.logical(out$summary[1, 'value']<0.05 & out$summary[2, 'value']<0.05)
   phase_shift_estimated_within_2hours <- abs(abs(out$summary[13,'value']) - phi1_in) < 2
@@ -18,11 +17,10 @@ test_that("circacompare() fits a good model to generated data", {
   expect_true(both_groups_rhythmic)
   expect_true(phase_shift_estimated_within_2hours)
 
-
-  fit_tau <- summary(out_tau_adjusted$fit)$coef['tau', ]
-  tau_est <- fit_tau['Estimate']
-  tau_ll <- tau_est - 1.96*fit_tau['Std. Error']
-  tau_ul <- tau_est + 1.96*fit_tau['Std. Error']
+  fit_tau <- extract_model_coefs(out_tau_adjusted$fit)['tau', ]
+  tau_est <- fit_tau['estimate']
+  tau_ll <- tau_est - 1.96*fit_tau['std_error']
+  tau_ul <- tau_est + 1.96*fit_tau['std_error']
   expect_true(tau_in < tau_ul & tau_in > tau_ll) # period estimate is approx well estimated to be close to tau (ln 5)
 
   # create some longer time period data and keep all parameters the same except amplitude
@@ -46,10 +44,11 @@ test_that("circacompare() fits a good model to generated data", {
                    decay_params=c("alpha"),
                    grouped_params=c("alpha", "alpha_decay")
                  ))
-  fit_alpha_decay1 <- summary(out_alpha_decay$fit)$coef['alpha_decay1',]
-  alpha_decay1_est <- fit_alpha_decay1['Estimate']
-  alpha_decay1_ll <- alpha_decay1_est - 1.96*fit_alpha_decay1['Std. Error']
-  alpha_decay1_ul <- alpha_decay1_est + 1.96*fit_alpha_decay1['Std. Error']
+
+  fit_alpha_decay1 <- extract_model_coefs(out_alpha_decay$fit)['alpha_decay1', ]
+  alpha_decay1_est <- fit_alpha_decay1['estimate']
+  alpha_decay1_ll <- alpha_decay1_est - 1.96*fit_alpha_decay1['std_error']
+  alpha_decay1_ul <- alpha_decay1_est + 1.96*fit_alpha_decay1['std_error']
   expect_true(alpha_decay1_in < alpha_decay1_ul & alpha_decay1_in > alpha_decay1_ll)
 
 })
