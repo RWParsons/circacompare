@@ -39,6 +39,7 @@ list
 \code{circa_single} performs an analysis on a single rhythmic dataset. It estimates the mesor, amplitude and phase of the data provided.
 }
 \examples{
-df <- make_data(phi1 = 0)
+df <- make_data()
+df <- df[df$group=="g1",]
 circa_single(x = df, col_time = "time", col_outcome="measure")
 }

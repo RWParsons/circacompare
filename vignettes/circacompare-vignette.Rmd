@@ -7,20 +7,39 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r, include=F}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.width = 5,
   fig.height = 3.5
 )
-library(circacompare)
 set.seed(42)
-data_single <- make_data(k1=0, alpha1=0, phi1=0)[c("time", "measure")]
-data_grouped <- make_data(phi1=6)
+# rmarkdown::render("vignettes/circacompare-vignette.Rmd")
 ```
 
-## Input data
+```{r, message=F, warning=F}
+library(circacompare)
+library(ggplot2)
+
+data_single <- make_data(k1=0, alpha1=0, phi1=0, noise_sd=1)[c("time", "measure")]
+data_grouped <- make_data(phi1=6, noise_sd=1)
+```
+
+## Updates since the initial release and Bioinformatics journal article
+
+There have been several added features to the package since the publication in Bioinformatics, and many of the possible uses for this package are not described in the publication.  The approach to compare two groups of rhythmic data described in the manuscript can be completed by using the `circacompare()` function under the default settings. In addition to this, the package offers approaches to:
+
+* Perform analysis on a single rhythmic dataset to estimate its mesor, amplitude and phase.
+* Choose to use a known period (user-determined) or to let the model estimate the period from the data.
+* Add parameters to estimate the exponential decay in any of the rhythmic characteristics (mesor, amplitude, phase, period).
+* Use a mixed-model instead of a fixed effects model to take into account within-subject correlation regarding any set of rhythmic parameters.
+* Perform a comparison between groups all or a subset of rhythmic characteristics.
+
+
+## Introduction to circacompare, using fixed-effects only models and no customized parametrization
+
+### Input data
 
 The first part of using circacompare to analyse your data is to ensure that your data is formatted correctly.
 All of the functions within the circacompare package expect that your data will be of a tidy format, meaning that each row will contain only one observation, with columns to represent the time, group or subject ID for that observation. 
@@ -38,7 +57,7 @@ tail(data_grouped)
 ```
 
 
-## `circa_single()`
+### `circa_single()`
 
 `circa_single()` is used to analyse a single rhythm and provide estimates of its mesor, amplitude and phase.
 
@@ -65,7 +84,7 @@ It fits a model: `measure ~ k + alpha * cos(time_r - phi)` where
 The parameter estimates of time in radian-hours (`time_r` and `phi`) are converted back to hours and reported in the `data.frame` (second element of list) and x-axis of the graph (third item of list)
 
 
-## `circacompare()`
+### `circacompare()`
 
 `circacompare()` is used to analyse a dataset with two groups of rhythmic data. It fits a model to estimate and statistically support differences in mesor, amplitude and phase between the two groups.
 
@@ -102,21 +121,90 @@ The second item of the `result2` list is a data.frame containing the important r
 
 More detailed outputs from the model can be obtained from the model itself
 
-```{r}
-nls_model <- result2[[3]]
 
-confint(nls_model)
-```
-
-
-## When to use what
+### When to use what
 
 If you are looking to estimate the rhythmic parameters of a single group, use `circa_single()`.
 If you are looking to estimate the differences between two rhythmic datasets, use `circacompare()`
 
-If your data has a hierarchical structure, a mixed model may be more appropriate. This may be the case if you have repeated measurements from the same subjects/tissues over time, for example. In this case, consider the equivalents of the above: `circa_single_mixed()` and `circacompare_mixed()`.  In addition to what has been described, these mixed models require the user to specify which parameters ought to have a random effect and the identifying column (`col_id`) for this hierarchical structure.
+If your data has a hierarchical structure, a mixed model may be more appropriate (keep reading). This may be the case if you have repeated measurements from the same subjects/tissues over time, for example. In this case, consider the equivalents of the above: `circa_single_mixed()` and `circacompare_mixed()`.  In addition to what has been described, these mixed models require the user to specify which parameters ought to have a random effect and the identifying column (`col_id`) for this hierarchical structure.
+
+
+## Mixed-model variants and customized parametrization
+
+If you have repeated measures data, then it may be inappropriate to use a standard fixed effects only model. In this case, you should use a mixed model, with context-relevant random effects for the individual.
+
+Here, I have some data that has some simulated within-id correlation in terms of the amount of phase shift between groups. 
+
+```{r}
+phi1_in <- 3.15
+mixed_data <- function(n){
+  counter <- 1
+  for(i in 1:n){
+    x <- make_data(k1=0, alpha1=5, phi1=rnorm(1, phi1_in, 1), hours=72, noise_sd = 2)
+    x$id <- counter
+    counter <- counter + 1
+    if(i==1){res <- x}else{res <- rbind(res, x)}
+  }
+  return(res)
+}
+df <- mixed_data(20)
+out <- circacompare_mixed(
+  x = df,
+  col_time = "time",
+  col_group = "group",
+  col_outcome = "measure",
+  col_id = "id",
+  control=list(grouped_params=c("alpha", "phi"), random_params=c("phi1")),
+  period=24
+)
+
+ggplot(data=df[df$id %in% c(1:6),], aes(time, measure)) + 
+  geom_point(aes(col=group)) + 
+  geom_smooth(aes(group=interaction(as.factor(id), group)), span=0.3)+
+  facet_wrap(~id)
+
+```
+
+For each ID, there are measurements in both groups (g1 and g2) but the degree of change in phase is ID-dependent.  The phase of group 1 is not ID-dependent, though, it's the amount of phase shift from g1 to g2 that is.  For this reason, we want to have a "random-slope" on the phase, so we should include "phi1" as a random effect. Also, since I know, from the data generating process, that both groups share the same mesor but not amplitude, I included `alpha` and `phi` as grouped parameters, but excluded `k`. I also know that the period is 24 hours, so I didn't bother fitting a parameter for `tau` either.
+
+From the data generating process used above, we expect:
+
+* `phi1=1.5`
+* `k1=3`
+* `alpha1=5`
+
+```{r}
+out$plot
+
+summary <- as.data.frame(circacompare:::extract_model_coefs(out$fit))
+summary$`95% CI ll` <- summary$estimate - summary$std_error*1.96
+summary$`95% CI ul` <- summary$estimate + summary$std_error*1.96
+
+summary
+```
+
+The effects were all pretty well estimated, with each of the estimates being within the 95% confidence intervals from the model.  If we expect the subject's to have different starting phases but their change in phase between groups to be the same, we may have put the random effect on `phi` rather than `phi1`. 
+
+Perhaps more commonly applicable would be if each subject has some random midpoint (baseline expression levels of the outcome).  In this case, it may be worthwhile to include `k` as a random effect. If `k` is included, this is equivalent to giving everyone (irrespective of group that they're assigned, if each subject is only included in one group) a "random intercept".
+
+
+## Decay parameters
+
+
+```{r}
 
 
 
+```
+
+
+## Period and phase parameters
+
+```{r}
+
+
+
+```
 
 
