@@ -285,13 +285,13 @@ circa_summary <- function(model, period, control,
   }
 
   if("phi" %in% names(V)){
-    if(V['phi'] > pi){
-      while(V['phi'] > pi){
+    if(V['phi'] > 2*pi){
+      while(V['phi'] > 2*pi){
         V['phi'] <- V['phi'] - 2*pi
       }
     }
-    if(V['phi'] < -pi){
-      while(V['phi'] < -pi){
+    if(V['phi'] < -2*pi){
+      while(V['phi'] < -2*pi){
         V['phi'] <- V['phi'] + 2*pi
       }
     }
