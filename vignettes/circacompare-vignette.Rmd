@@ -32,7 +32,7 @@ There have been several added features to the package since the publication in B
 
 * Perform analysis on a single rhythmic dataset to estimate its mesor, amplitude and phase.
 * Choose to use a known period (user-determined) or to let the model estimate the period from the data.
-* Add parameters to estimate the exponential decay in any of the rhythmic characteristics (mesor, amplitude, phase, period).
+* Add parameters to estimate the exponential decay in any of the rhythmic characteristics.
 * Use a mixed-model instead of a fixed effects model to take into account within-subject correlation regarding any set of rhythmic parameters.
 * Perform a comparison between groups all or a subset of rhythmic characteristics.
 
@@ -189,22 +189,67 @@ The effects were all pretty well estimated, with each of the estimates being wit
 Perhaps more commonly applicable would be if each subject has some random midpoint (baseline expression levels of the outcome).  In this case, it may be worthwhile to include `k` as a random effect. If `k` is included, this is equivalent to giving everyone (irrespective of group that they're assigned, if each subject is only included in one group) a "random intercept".
 
 
-## Decay parameters
+## Decay parameters and parametrizing period
 
+There is the option to model the decay of parameters, as well as adding parameters to measure the difference in decay between groups. In this mode detailed model, we make simulated data with no difference in mesor or phase between groups, an unknown period (somewhere between 8 and 20 hours) that we want to estimate, and one group which has exponentially decaying amplitude at the rate:
+
+$$
+\alpha*e^{-\alpha_{decay}*t}
+$$
+Where `alpha` is the amplitude, and `t` is time in radian-hours.
+
+In our case, `alpha_decay` will be an unknown value, somewhere between 0.05 and 0.3.
+
+To model these data, we will include all the standard parameters as well as `tau` (to control the period) in the `main_params`:
+  `main_params=c("k", "alpha", "phi", "tau")`
+
+We will include a term for amplitude in the `decay_params`:
+  `decay_params=c("alpha")`
+
+And we will model the differences between groups for `alpha` and `alpha_decay`:
+  `grouped_params=c("alpha", "alpha_decay")`
+
+This produces the following model:
+`measure~k+((alpha+alpha1*x_group)*exp(-(alpha_decay+alpha_decay1*x_group)*time_r))*cos((24/(tau))*time_r-(phi))`
 
 ```{r}
+tau_in <- runif(1, 8, 20)
+alpha_decay1_in <- runif(1, 0.05, 0.3)
 
+df <- make_data(k1=0, alpha1=10, phi1=0, seed=42, hours=96, noise_sd=2)
+df$time <- df$time/24*tau_in
 
+# note that decay is on a scale of time in radians, not time in hours.
+df$measure[df$group=="g2"] <- df$measure[df$group=="g2"]*exp(-alpha_decay1_in*(df$time*2*pi/24)[df$group=="g2"])
+out_alpha_decay <-
+  circacompare(x=df, "time", "group", "measure", period=NA,
+  control=list(
+  main_params=c("k", "alpha", "phi", "tau"),
+  decay_params=c("alpha"),
+  grouped_params=c("alpha", "alpha_decay")
+))
+
+out_alpha_decay$plot
+
+summary <- as.data.frame(circacompare:::extract_model_coefs(out_alpha_decay$fit))
+summary$`95% CI ll` <- summary$estimate - summary$std_error*1.96
+summary$`95% CI ul` <- summary$estimate + summary$std_error*1.96
+summary
 
 ```
+We now have estimates for the decay and the period, which were of interest.  Lets see the real values and check that they fell within the confidence intervals?
+
+```{r}
+cat("Real period: ", tau_in, "\n\n",
+    "Real alpha_decay: ", alpha_decay1_in, sep="")
+```
+
+Looks like our estimates and confidence intervals suited our now-known data generating process well!
 
 
 ## Period and phase parameters
 
-```{r}
+It may be tempting to investigate the differences between two groups of rhythmic data regarding everything! But, unfortunately, there are limitations. If two groups of data are allowed to vary regarding their period, the interpretation of a difference in phase is no longer sensical.  For this reason, you cannot have both `tau` and `phi` within `group_params` in either `circacompare()` or `circacompare_mixed()`.
 
-
-
-```
 
 
