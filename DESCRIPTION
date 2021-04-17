@@ -24,7 +24,6 @@ Suggests:
     testthat (>= 3.0.0),
     nlme,
     knitr,
-    rmarkdown,
-    tidyverse
+    rmarkdown
 Config/testthat/edition: 3
 VignetteBuilder: knitr
