@@ -11,7 +11,8 @@ circacompare(
   col_outcome,
   period = 24,
   alpha_threshold = 0.05,
-  timeout_n = 10000
+  timeout_n = 10000,
+  control = list()
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ circacompare(
 \item{alpha_threshold}{The level of alpha for which the presence of rhythmicity is considered. Default is 0.05.}
 
 \item{timeout_n}{The upper limit for the model fitting attempts. Default is 10,000.}
+
+\item{control}{\code{list}. Used to control the parameterization of the model.}
 }
 \value{
 list

@@ -15,6 +15,7 @@
 #' @param verbose An optional logical value. If \code{TRUE} information on the evolution of the iterative algorithm is printed. Default is \code{FALSE}.
 #' @param timeout_n The upper limit for the model fitting attempts. Default is \code{10000}.
 #' @param return_figure Whether or not to return a ggplot graph of the rhythm and cosine model.
+#' @param control \code{list}. Used to control the parameterization of the model.
 #'
 #' @return list
 #' @export
@@ -45,15 +46,34 @@ circa_single_mixed <- function (x,
                                 nlme_method = "ML",
                                 verbose = FALSE,
                                 timeout_n = 10000,
-                                return_figure = TRUE){
+                                return_figure = TRUE,
+                                control = list()){
   if(!requireNamespace("ggplot2", quietly = TRUE) & return_figure){
     return(message("Please install 'ggplot2'"))
   }
 
+  controlVals <- circa_single_mixed_control()
+  controlVals[names(control)] <- control
+
+  if(controlVals$period_param){
+    controlVals$main_params <- c(controlVals$main_params, "tau")
+  }
+  if("tau" %in% controlVals$main_params){
+    controlVals$period_param=TRUE
+  }
+
+  randomeffects <- unique(c(randomeffects, controlVals$random_params))
+
   x <- x[c(col_time, col_outcome, col_id)]
   colnames(x) <- c("time", "measure", "id")
 
-  if(length(setdiff(randomeffects, c("k", "alpha", "phi"))) != 0){
+  if(length(controlVals$decay_params)>0){
+    p <- append(controlVals$main_params, paste0(controlVals$decay_params, "_decay"))
+  }else{
+    p <- controlVals$main_params
+  }
+
+  if(length(setdiff(randomeffects, p)) != 0){
     return(message('"randomeffects" should only include the names of parameters\nthat represent rhythmic characteristics in the model.\nThey should be a subset of, or equal to c("k", "alpha", "phi")'))
   }
 
@@ -74,58 +94,75 @@ circa_single_mixed <- function (x,
                          "\nPlease convert the measure variable in your dataframe to be of one of these classes",
                          sep = "")))
   }
-  x$time_r <- (x$time/24) * 2 * pi * (24/period)
-  comparison_model_success <- 0
-  comparison_model_timeout <- FALSE
-  success <- 0
+
+  if(!class(period) %in% c("numeric", "integer") & !controlVals$period_param){
+    return(message(paste0("The period argument must be a number representing the period of the rhythm in hours\n",
+                          "If you would like the period to be estimated as part of the model, use:\ncontrol=list(period_param=TRUE)")))
+  }
+
+  if(controlVals$period_param & !is.na(period)){
+    message(paste0("control$period_param is TRUE\n'period=", period, "' is being ignored.\nSet 'period=NA' to avoid this message"))
+  }
+
+
+  if(!controlVals$period_param){
+    x$time_r <- (x$time/period) * 2 * pi
+
+  }else{
+    x$time_r <- (x$time/24) * 2 * pi
+    if(is.null(controlVals$period_min) | is.null(controlVals$period_min)){
+      message(paste0("If you want the model to estimate the period using a parameter,",
+                     "you may get faster convergence if you provide an approximate range using 'period_min' and 'period_max' in control()",
+                     "\nCurrently assuming period is between: period_min=", controlVals$period_min,
+                     "and period_max=", controlVals$period_max))
+    }
+  }
+
+  success <- FALSE
   n <- 0
-  while (success != 1) {
-    alpha_start <- (max(x$measure, na.rm = TRUE) - min(x$measure, na.rm = TRUE)) * stats::runif(1)
-    phi_start <- stats::runif(1) * 6.15 - 3.15
-    k_start <- mean(x$measure, na.rm = TRUE) * 2 * stats::runif(1)
+  form <- create_formula(main_params = controlVals$main_params, decay_params=controlVals$decay_params)$formula
+  fixedeffects_formula <- stats::formula(paste(paste0(p, collapse="+"), "~ 1"))
+  randomeffects_formula <- stats::formula(paste(paste0(randomeffects, collapse="+"), "~ 1 | id"))
 
-    randomeffects_formula <- stats::formula(paste(paste0(randomeffects, collapse="+"), "~ 1 | id"))
-
-    fit.nlme <- try({nlme::nlme(measure~k+alpha*cos(time_r-phi),
+  while(!success){
+    fit.nlme <- try({nlme::nlme(model = form,
                                 random = randomeffects_formula,
-                                fixed = k+alpha+phi~1,
+                                fixed = fixedeffects_formula,
                                 data = x,
-                                start = c(k=k_start, alpha=alpha_start, phi=phi_start),
+                                start = unlist(start_list(outcome=x$measure, controlVals=controlVals)),
                                 control = nlme_control,
                                 method = nlme_method,
                                 verbose = verbose)},
                     silent = ifelse(verbose, FALSE, TRUE)
     )
+
     if ("try-error" %in% class(fit.nlme)) {
       n <- n + 1
     }
     else {
-      k_out <- summary(fit.nlme)$tTable[1, 1]
-      alpha_out <- summary(fit.nlme)$tTable[2, 1]
-      alpha_p <- summary(fit.nlme)$tTable[2, 5]
-      phi_out <- summary(fit.nlme)$tTable[3, 1]
-      success <- ifelse(alpha_out > 0 & phi_out >= 0 & phi_out <= 2 * pi, 1, 0)
+      nlme_coefs <- extract_model_coefs(fit.nlme)
+      V <- nlme_coefs[, 'estimate']
+      success <- assess_model_estimates(param_estimates=V)
       n <- n + 1
     }
     if (n >= timeout_n) {
       return(message("Failed to converge data prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
     }
   }
-  data_rhythmic <- ifelse(alpha_p < alpha_threshold, TRUE, FALSE)
-  eq <- function(time) {
-    k_out + alpha_out * cos((2 * pi/period) * time - phi_out)
-  }
+  data_rhythmic <- nlme_coefs['alpha', 'p_value'] < alpha_threshold
 
-  if(return_figure == TRUE){
-    if(data_rhythmic == TRUE) {
+  eq_expression <- create_formula(main_params = controlVals$main_params, decay_params=controlVals$decay_params)$f_equation
+  eval(parse(text=eq_expression))
+
+  if(return_figure){
+    if(data_rhythmic){
       fig_out <- ggplot2::ggplot(x, ggplot2::aes(time, measure)) +
         ggplot2::stat_function(fun = eq, size = 1) +
         ggplot2::geom_point() +
         ggplot2::xlim(min(floor(x$time/period) * period),
                       max(ceiling(x$time/period) * period)) +
         ggplot2::labs(subtitle = "Data is rhythmic", x = "time (hours)")
-    }
-    else{
+    }else{
       fig_out <- ggplot2::ggplot(x, ggplot2::aes(time, measure)) +
         ggplot2::geom_point() +
         ggplot2::xlim(min(floor(x$time/period) * period),
@@ -134,14 +171,19 @@ circa_single_mixed <- function (x,
     }
   }
 
-  peak_time <- phi_out * period/(2 * pi)
-  output_parms <- data.frame(mesor = k_out, amplitude = alpha_out,
-                             amplitude_p = alpha_p, phase_radians = phi_out, peak_time_hours = phi_out *
-                               period/(2 * pi))
-  if(return_figure == TRUE){
-    return(list(fit.nlme, output_parms, fig_out))
-  }else{
-    return(list(fit.nlme, output_parms))
-  }
+  output_parms <- circa_summary(model=fit.nlme, period=period, control=controlVals)
 
+  if(return_figure){
+    return(list(fit=fit.nlme, summary=output_parms, plot=fig_out))
+  }else{
+    return(list(fit=fit.nlme, summary=output_parms))
+  }
+}
+
+
+circa_single_mixed_control <- function(period_param=F, period_min=20, period_max=28,
+                                       main_params=c("k", "alpha", "phi"), decay_params=c(),
+                                       random_params=c("k")){
+  list(period_param=period_param, period_min=period_min, period_max=period_max,
+       main_params=main_params, decay_params=decay_params, random_params=random_params)
 }
