@@ -4,14 +4,34 @@
 \alias{make_data}
 \title{make_data}
 \usage{
-make_data(k1 = 3, alpha1 = 4, phi1 = 6, seed = NULL)
+make_data(
+  k = 0,
+  k1 = 3,
+  alpha = 10,
+  alpha1 = 4,
+  phi = 0,
+  phi1 = 3.15,
+  hours = 48,
+  noise_sd = 0.1,
+  seed = NULL
+)
 }
 \arguments{
-\item{k1}{mesor difference between groups.}
+\item{k}{mesor of group 1.}
 
-\item{alpha1}{amplitude difference between groups.}
+\item{k1}{change in mesor in group 2 from group 1.}
 
-\item{phi1}{Amount of phase shift, in hours, between the two groups within the generated data}
+\item{alpha}{amplitude rhythm for group 1.}
+
+\item{alpha1}{change in amplitude in group 2 from group 1}
+
+\item{phi}{phase of rhythm, in radian-hours, in group 1.}
+
+\item{phi1}{change in phase, in radian-hours, in group 2 from group 1}
+
+\item{hours}{the number of hours/datapoints to sample.}
+
+\item{noise_sd}{the standard deviation of the noise term.}
 
 \item{seed}{random seed for generating data.}
 }

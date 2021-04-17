@@ -2,7 +2,7 @@ test_that("circacompare() fits a good model to generated data", {
   set.seed(40)
   tau_in <- 15
   phi1_in <- 12
-  df <- make_data(phi1=phi1_in)
+  df <- make_data(phi1=(phi1_in/24)*(2*pi), noise_sd = 2)
   out <- circacompare(x = df, col_time = "time", col_group = "group", col_outcome = "measure")
 
   df$time <- df$time/24*tau_in
@@ -25,10 +25,10 @@ test_that("circacompare() fits a good model to generated data", {
 
   # create some longer time period data and keep all parameters the same except amplitude
   # create some decay in one group for amplitude and test whether it's well estimated by the model.
-  x1 <- make_data(k1=0, alpha1=10, phi1=0, seed=NULL)
-  x2 <- make_data(k1=0, alpha1=10, phi1=0, seed=NULL)
+  x1 <- make_data(k1=0, alpha1=10, phi1=0, seed=NULL, noise_sd = 2)
+  x2 <- make_data(k1=0, alpha1=10, phi1=0, seed=NULL, noise_sd = 2)
   x2$time <- x2$time + 24
-  x3 <- make_data(k1=0, alpha1=10, phi1=0, seed=NULL)
+  x3 <- make_data(k1=0, alpha1=10, phi1=0, seed=NULL, noise_sd = 2)
   x3$time <- x3$time + 48
   df <- rbind(x1, x2, x3)
   df$time <- df$time/24*tau_in

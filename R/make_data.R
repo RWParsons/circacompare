@@ -3,34 +3,36 @@
 #'
 #' @description Generate example circadian data with specified phase shift between groups
 #'
-#' @param k1 mesor difference between groups.
-#' @param alpha1 amplitude difference between groups.
-#' @param phi1 Amount of phase shift, in hours, between the two groups within the generated data
+#' @param k mesor of group 1.
+#' @param k1 change in mesor in group 2 from group 1.
+#' @param alpha amplitude rhythm for group 1.
+#' @param alpha1 change in amplitude in group 2 from group 1
+#' @param phi phase of rhythm, in radian-hours, in group 1.
+#' @param phi1 change in phase, in radian-hours, in group 2 from group 1
+#' @param hours the number of hours/datapoints to sample.
+#' @param noise_sd the standard deviation of the noise term.
 #' @param seed random seed for generating data.
 #' @return data.frame
 #' @export
 #'
 #' @examples
 #' data <- make_data(k1=3, alpha1=4, phi1 = 6)
-make_data <- function(k1=3, alpha1=4, phi1 = 6, seed=NULL){
+make_data <- function(k=0, k1=3, alpha=10, alpha1=4, phi=0, phi1 = 3.15, hours=48, noise_sd=0.1, seed=NULL){
   if(!is.null(seed)){set.seed(seed)}
-  g1 <- data.frame(time = c(),
-                   measure = c())
-  g2 <- data.frame(time = c(),
-                   measure = c())
-  for(i in 1:24){
-    x1 <- (i*2*pi)/24
-    x2 <- ((i+phi1)*2*pi)/24
-    measure_1 <- sin(x1)*10
-    measure_1 <- stats::rnorm(1, measure_1, 2)
-    measure_2 <- sin(x2)*(10 + alpha1) + k1
-    measure_2 <- stats::rnorm(1, measure_2, 2)
-    g1 <- rbind(g1, c(i,signif(measure_1,digits = 2)))
-    g2 <- rbind(g2, c(i,signif(measure_2,digits = 2)))
-  }
-  colnames(g1) <- c("time", "measure")
-  colnames(g2) <- c("time", "measure")
+  g1 <- data.frame(time = rep(NA, hours),
+                   measure = rep(NA, hours))
+  g2 <- data.frame(time = rep(NA, hours),
+                   measure = rep(NA, hours))
+  V <- c(k=k, k1=k1, alpha=alpha, alpha1=alpha1, phi=phi, phi1=phi1)
+  eq_expression <- create_formula(grouped_params = c("k", "alpha", "phi"))$f_equation
+  eval(parse(text=eq_expression$g1))
+  eval(parse(text=eq_expression$g2))
+  g1$time <- 1:hours
+  g1$measure <- eq_1(g1$time) + stats::rnorm(n=hours, mean=0, sd=noise_sd)
   g1$group <- "g1"
+  g2$time <- 1:hours
+  g2$measure <- eq_2(g2$time) + stats::rnorm(n=hours, mean=0, sd=noise_sd)
   g2$group <- "g2"
-  df <- rbind(g1,g2)
+
+  return(rbind(g1, g2))
 }
