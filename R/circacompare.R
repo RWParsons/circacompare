@@ -73,11 +73,10 @@ circacompare <- function(x,
   if(controlVals$period_param & !is.na(period)){
     message(paste0("control$period_param is TRUE\n'period=", period, "' is being ignored.\nSet 'period=NA' to avoid this message"))
   }
-
+  x$time_r <- x$time*2*pi
   if(!controlVals$period_param){
-    x$time_r <- (x$time/24) * 2 * pi * (24/period)
+    x$period <- period
   }else{
-    x$time_r <- (x$time/24) * 2 * pi
     if(is.null(controlVals$period_min) | is.null(controlVals$period_min)){
       message(paste0("If you want the model to estimate the period using a parameter,",
                      "you may get faster convergence if you provide an approximate range using 'period_min' and 'period_max' in control()",

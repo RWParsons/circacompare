@@ -23,14 +23,15 @@ test_that("circacompare() fits a good model to generated data", {
   tau_ul <- tau_est + 1.96*fit_tau['std_error']
   expect_true(tau_in < tau_ul & tau_in > tau_ll) # period estimate is approx well estimated to be close to tau (ln 5)
 
+
+
   # create some longer time period data and keep all parameters the same except amplitude
   # create some decay in one group for amplitude and test whether it's well estimated by the model.
   df <- make_data(k1=0, alpha1=10, phi1=0, seed=42, hours=96, noise_sd=2)
   df$time <- df$time/24*tau_in
-
   alpha_decay1_in <- 0.2
   # note that decay is on a scale of time in radians, not time in hours.
-  df$measure[df$group=="g2"] <- df$measure[df$group=="g2"]*exp(-alpha_decay1_in*(df$time*2*pi/24)[df$group=="g2"])
+  df$measure[df$group=="g2"] <- df$measure[df$group=="g2"]*exp(-alpha_decay1_in*df$time[df$group=="g2"])
 
   out_alpha_decay <-
     circacompare(x=df, "time", "group", "measure", period=NA,

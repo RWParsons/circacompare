@@ -1,5 +1,6 @@
 utils::globalVariables(c('time', 'measure', 'group', 'eq', 'eq_1', 'eq_2'))
 
+
 extract_model_coefs <- function(model){
   if("nls" %in% class(model)){
     results <- summary(model)$coef[, c(1, 2, 4)]
@@ -97,7 +98,7 @@ create_formula <- function(main_params=c("k", "alpha", "phi"), decay_params=c(),
   }
 
   build_component <- function(pattern, eq=F){
-    t <- ifelse(eq, "time", "time_r")
+    t <- "time_r"
 
     main <- main_params[grep(pattern, main_params)]
     decay <- decay_params[grep(pattern, decay_params)]
@@ -136,15 +137,15 @@ create_formula <- function(main_params=c("k", "alpha", "phi"), decay_params=c(),
           decay <- paste0("V['", decay, "']")
         }
       }
-      main <- paste0(main, "*exp(-(", decay, ")*", t, ")")
+      main <- paste0(main, "*exp(-(", decay, ")*time)")
     }
     component <- main
 
     if(pattern=="^tau"){
       if(length(component)==0){
-        component <- ""
+        component <- ifelse(eq, "(1/V['tau'])*", "(1/period)*")
       }else{
-        component <- paste0("(24/(", component, "))*")
+        component <- paste0("(1/(", component, "))*")
       }
     }
     return(component)
@@ -152,18 +153,19 @@ create_formula <- function(main_params=c("k", "alpha", "phi"), decay_params=c(),
 
   res_formula <- paste0("measure~", build_component("^k"), "+(", build_component("^alpha"),
                         ")*cos(", build_component("^tau"), "time_r-(", build_component("^phi"), "))")
-  res_formula <- gsub("1", "1*x_group", res_formula)
+  res_formula <- gsub("(?<=[a-z])1", "1*x_group", res_formula, perl=T)
   res_formula <- stats::as.formula(res_formula)
   res_equation <- paste0(build_component("^k", eq=T), "+(", build_component("^alpha", eq=T),
-                         ")*cos(", build_component("^tau", eq=T), "time-(", build_component("^phi", eq=T), "))")
+                         ")*cos(", build_component("^tau", eq=T), "time_r-(", build_component("^phi", eq=T), "))")
+
 
   if(length(grouped_params)>0){
     res_equation <- list(
-      g1=paste0("eq_1 <- function(time) {time<-(time/24)*2*pi;return(", gsub("\\+V\\['[a-z]*_?[a-z]*1'\\]", "", res_equation), ")}"),
-      g2=paste0("eq_2 <- function(time) {time<-(time/24)*2*pi;return(", res_equation, ")}")
+      g1=paste0("eq_1 <- function(time) {time_r<-time*2*pi;return(", gsub("\\+V\\['[a-z]*_?[a-z]*1'\\]", "", res_equation), ")}"),
+      g2=paste0("eq_2 <- function(time) {time_r<-time*2*pi;return(", res_equation, ")}")
     )
   }else{
-    res_equation <- paste0("eq <- function(time) {time<-(time/24)*2*pi;return(", res_equation, ")}")
+    res_equation <- paste0("eq <- function(time) {time_r<-time*2*pi;return(", res_equation, ")}")
   }
   return(list(formula=res_formula, f_equation=res_equation))
 }
@@ -229,7 +231,6 @@ start_list_grouped <- function(g1, g2, grouped_params=c("k", "alpha", "phi")){
   lst <- as.list(vec)
 
   lst <- lst[order]
-  # return(as.list(vec))
   return(lst)
 }
 
@@ -262,9 +263,7 @@ assess_model_estimates <- function(param_estimates){
   if("tau1" %in% names(param_estimates)){
     res <- ifelse(param_estimates['tau'] + param_estimates['tau1']<0, FALSE, res)
   }
-
   return(res)
-
 }
 
 
@@ -297,9 +296,7 @@ circa_summary <- function(model, period, control,
     }
   }
 
-
   peak_time_diff <- V['phi1']*V['tau']/(2*pi)
-
 
   res <- data.frame(parameter=c(), value=c())
   if(!grouped){

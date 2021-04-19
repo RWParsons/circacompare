@@ -9,6 +9,7 @@
 #' @param alpha1 change in amplitude in group 2 from group 1
 #' @param phi phase of rhythm, in radian-hours, in group 1.
 #' @param phi1 change in phase, in radian-hours, in group 2 from group 1
+#' @param tau period of the rhythm, shared between both groups.
 #' @param hours the number of hours/datapoints to sample.
 #' @param noise_sd the standard deviation of the noise term.
 #' @param seed random seed for generating data.
@@ -17,13 +18,13 @@
 #'
 #' @examples
 #' data <- make_data(k1=3, alpha1=4, phi1 = 6)
-make_data <- function(k=0, k1=3, alpha=10, alpha1=4, phi=0, phi1 = 3.15, hours=48, noise_sd=0.1, seed=NULL){
+make_data <- function(k=0, k1=3, alpha=10, alpha1=4, phi=0, phi1 = 3.15, tau=24, hours=48, noise_sd=0.1, seed=NULL){
   if(!is.null(seed)){set.seed(seed)}
   g1 <- data.frame(time = rep(NA, hours),
                    measure = rep(NA, hours))
   g2 <- data.frame(time = rep(NA, hours),
                    measure = rep(NA, hours))
-  V <- c(k=k, k1=k1, alpha=alpha, alpha1=alpha1, phi=phi, phi1=phi1)
+  V <- c(k=k, k1=k1, alpha=alpha, alpha1=alpha1, phi=phi, phi1=phi1, tau=tau)
   eq_expression <- create_formula(grouped_params = c("k", "alpha", "phi"))$f_equation
   eval(parse(text=eq_expression$g1))
   eval(parse(text=eq_expression$g2))

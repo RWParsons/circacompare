@@ -31,5 +31,30 @@ test_that("circa_single works", {
   tau_ul <- tau_est + 1.96*fit_tau['std_error']
   expect_true(tau < tau_ul & tau > tau_ll) # period estimate is approx well estimated to be close to tau (ln 5)
 
+
+  # assess whether decay on amplitude per-hour is modelled well when period is parameterized
+  alpha_decay_in <- 0.01
+  tau_in <- 16
+  df <- make_data(k=5, k1=0, alpha=20, alpha1=0, phi=2, phi1=0, hours=96, noise_sd=1)
+  df$time <- df$time/24*tau_in
+  df$measure<- df$measure*exp(-alpha_decay_in*(df$time))
+  out_alpha_decay <- circa_single(
+    x=df,
+    col_time="time",
+    col_outcome="measure",
+    period=NA,
+    control=list(
+      main_params=c("k", "alpha", "phi", "tau"),
+      decay_params=c("alpha")
+    )
+  )
+  out_alpha_decay
+
+  fit_alpha_decay <- extract_model_coefs(out_alpha_decay$fit)['alpha_decay', ]
+  alpha_decay_est <- fit_alpha_decay['estimate']
+  alpha_decay_ll <- alpha_decay_est - 1.96*fit_alpha_decay['std_error']
+  alpha_decay_ul <- alpha_decay_est + 1.96*fit_alpha_decay['std_error']
+  expect_true(alpha_decay_in < alpha_decay_ul & alpha_decay_in > alpha_decay_ll)
+
 })
 

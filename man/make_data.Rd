@@ -11,6 +11,7 @@ make_data(
   alpha1 = 4,
   phi = 0,
   phi1 = 3.15,
+  tau = 24,
   hours = 48,
   noise_sd = 0.1,
   seed = NULL
@@ -28,6 +29,8 @@ make_data(
 \item{phi}{phase of rhythm, in radian-hours, in group 1.}
 
 \item{phi1}{change in phase, in radian-hours, in group 2 from group 1}
+
+\item{tau}{period of the rhythm, shared between both groups.}
 
 \item{hours}{the number of hours/datapoints to sample.}
 
