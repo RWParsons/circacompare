@@ -122,35 +122,31 @@ circacompare <- function(x,
       return(message(group_2_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
     }
   }
+
   n <- 0
-
+  success <- FALSE
   form_group <- create_formula(main_params=controlVals$main_params, decay_params=controlVals$decay_params, grouped_params=controlVals$grouped_params)$formula
-  comparison_model_success <- FALSE
-  comparison_model_timeout <- FALSE
-  while(!comparison_model_success & !comparison_model_timeout){
-
-    starting_params <- start_list_grouped(g1=g1_model$model, g2=g2_model$model, grouped_params=controlVals$grouped_params)
-
+  while(!success){
     fit.nls <- try({stats::nls(formula=form_group,
                                data=x,
-                               start=starting_params,
+                               start=start_list_grouped(g1=g1_model$model, g2=g2_model$model, grouped_params=controlVals$grouped_params),
                                control=stats::nls.control(maxiter = 100, minFactor = 1/10000)
                                )},
                    silent = FALSE)
 
-    if (!class(fit.nls) == "try-error") {
+    if(class(fit.nls)=="try-error"){
+      n <- n + 1
+    }else{
       nls_coefs <- extract_model_coefs(fit.nls)
       V <- nls_coefs[, 'estimate']
-      comparison_model_success <- assess_model_estimates(param_estimates=V)
+      success <- assess_model_estimates(param_estimates=V)
+      n <- n + 1
     }
-    comparison_model_timeout <- ifelse(n>timeout_n, TRUE, FALSE)
-    n <- n + 1
+    if(n > timeout_n){
+      return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
+    }
   }
   if(!controlVals$period_param){V['tau'] <- period}
-  if(comparison_model_timeout){
-    return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
-  }
-
 
   eq_expression <- create_formula(main_params=controlVals$main_params,
                                   decay_params=controlVals$decay_params,

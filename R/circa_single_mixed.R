@@ -149,6 +149,8 @@ circa_single_mixed <- function (x,
   }
   data_rhythmic <- nlme_coefs['alpha', 'p_value'] < alpha_threshold
 
+  if(!controlVals$period_param){V['tau'] <- period}
+
   eq_expression <- create_formula(main_params = controlVals$main_params, decay_params=controlVals$decay_params)$f_equation
   eval(parse(text=eq_expression))
 

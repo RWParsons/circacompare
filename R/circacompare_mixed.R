@@ -206,10 +206,12 @@ circacompare_mixed <- function(x,
       success <-assess_model_estimates(param_estimates=V)
       n <- n + 1
     }
+    if(n > timeout_n){
+      return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
+    }
   }
-  if(n > timeout_n){
-    return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
-  }
+  if(!controlVals$period_param){V['tau'] <- period}
+
 
   eq_expression <- create_formula(main_params=controlVals$main_params,
                                   decay_params=controlVals$decay_params,
@@ -225,7 +227,7 @@ circacompare_mixed <- function(x,
     ggplot2::scale_colour_manual(breaks = c(group_1_text, group_2_text),
                                  values = c("blue", "red")) +
     ggplot2::labs(colour = 'Legend',
-                  x = "time (hours)")+
+                  x = "time (hours)") +
     ggplot2::xlim(min(floor(x$time/period) * period),
                   max(ceiling(x$time/period) * period))
 
@@ -244,7 +246,6 @@ circacompare_mixed_control <- function(period_param=F, period_min=20, period_max
        main_params=main_params, grouped_params=grouped_params,
        decay_params=decay_params, random_params=random_params)
 }
-
 
 
 
