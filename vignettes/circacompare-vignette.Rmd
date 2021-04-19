@@ -1,5 +1,5 @@
 ---
-title: "Introduction to using circacompare"
+title: "Introduction to circacompare"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{circacompare-vignette}
@@ -18,26 +18,19 @@ set.seed(42)
 # rmarkdown::render("vignettes/circacompare-vignette.Rmd")
 ```
 
-```{r, message=F, warning=F}
-library(circacompare)
-library(ggplot2)
+## Updates since the initial release (circacompare 0.1.0) and [Bioinformatics journal article](https://doi.org/10.1093/bioinformatics/btz730).
 
-data_single <- make_data(k1=0, alpha1=0, phi1=0, noise_sd=1)[c("time", "measure")]
-data_grouped <- make_data(phi1=6, noise_sd=1)
-```
-
-## Updates since the initial release and Bioinformatics journal article
-
-There have been several added features to the package since the publication in Bioinformatics, and many of the possible uses for this package are not described in the publication.  The approach to compare two groups of rhythmic data described in the manuscript can be completed by using the `circacompare()` function under the default settings. In addition to this, the package offers approaches to:
+There have been several added features to the current version of the circacompare package since the publication in Bioinformatics and initial release on CRAN. Many of the possible uses for this package are not described in the manuscript.  The approach to compare two groups of rhythmic data, regarding mesor, amplitude and phase, as described in the manuscript, can be completed by using the `circacompare()` function under the default settings in any version of the package. In addition to this, the current version offers approaches to:
 
 * Perform analysis on a single rhythmic dataset to estimate its mesor, amplitude and phase.
 * Choose to use a known period (user-determined) or to let the model estimate the period from the data.
 * Add parameters to estimate the exponential decay in any of the rhythmic characteristics.
-* Use a mixed-model instead of a fixed effects model to take into account within-subject correlation regarding any set of rhythmic parameters.
-* Perform a comparison between groups all or a subset of rhythmic characteristics.
+* Use a mixed-model instead of a fixed effects model to take into account within-subject correlation regarding any set of rhythmic characteristics.
+* Perform a comparison between groups regarding all or a subset of rhythmic characteristics.
 
 
-## Introduction to circacompare, using fixed-effects only models and no customized parametrization
+## Introduction to circacompare, using fixed-effects only models and no customized model parametrization
+
 
 ### Input data
 
@@ -46,12 +39,20 @@ All of the functions within the circacompare package expect that your data will 
 
 In the simplest case, you may have a single rhythm for which you're wanting to estimate the mesor, amplitude and phase.  In this case, you only need a variable for the time of observation and the outcome which you're wanting to model.
 
+
+```{r, message=F, warning=F}
+library(circacompare)
+library(ggplot2)
+```
+
 ```{r}
+data_single <- make_data(k1=0, alpha1=0, phi1=0, noise_sd=1)[c("time", "measure")]
 head(data_single)
 ```
 In the case that you have data from two groups and you're wishing to determine the differences in mesor, amplitude, or phase between them, you will need an additional column (with two possible values) representing the groups.
 
 ```{r}
+data_grouped <- make_data(phi1=6, noise_sd=1)
 head(data_grouped)
 tail(data_grouped)
 ```
@@ -130,14 +131,45 @@ If you are looking to estimate the differences between two rhythmic datasets, us
 If your data has a hierarchical structure, a mixed model may be more appropriate (keep reading). This may be the case if you have repeated measurements from the same subjects/tissues over time, for example. In this case, consider the equivalents of the above: `circa_single_mixed()` and `circacompare_mixed()`.  In addition to what has been described, these mixed models require the user to specify which parameters ought to have a random effect and the identifying column (`col_id`) for this hierarchical structure.
 
 
-## Mixed-model variants and customized parametrization
+## Mixed-model variants and how to customize the parameterization of the model
 
-If you have repeated measures data, then it may be inappropriate to use a standard fixed effects only model. In this case, you should use a mixed model, with context-relevant random effects for the individual.
+### Firstly, a mention on `control` and model parameters
+
+When we refer to parameters, we are talking about covariates in the model being fit that will represent rhythmic characteristics of the data. Arguments are what the user (you) supplies when calling the function.
+
+For all of the circacompare functions, the argument `control` contains a list of optional arguments that can be used to modify the parameterization of the model being fit. This list includes `main_params`, `decay_params`, `rand_params`, `group_params` which are all character vectors. The naming conventions of values within these vectors is consistent with our model formulas described earlier: "k" for mesor, "alpha" for amplitude, "phi" for phase. The additional parameter we introduce here is "tau" for period.
+
+In `circa_single()` there are no groups to model differences between so `group_params` is ignored. Since there are also no random effects, `rand_params` is also ignored. Only the `main_params` and `decay_params` are considered.  Similarly, `circacompare()` considers `main_params`, `decay_params`, and ignores `rand_params()`, but also includes `group_params` as it is used to consider the differences between groups. Only the mixed-model variants of these two functions, `circa_single_mixed()` and `circacompare_mixed()`, consider `rand_params`.
+
+For the `main_params` vector, the possible values are `k` for the mesor, `alpha` for amplitude, `phi` for phase, and `tau`. The only optional parameter of these in the `main_params` is `tau`, the rest must be included at all times.  The default is `main_params=c("k", "alpha", "phi")`, which excludes the parameterization of period in the model.  
+
+The values within `decay_params` must be a set within `main_params` as, for example, we can't model the decay in period, without modelling the starting period.  The default is to not model decay of any rhythmic characteristics: `decay_params=c()`.
+
+Additional possible arguments in the `control` list are: 
+
+* `period_param` adds `"tau"` to the `main_params` if `TRUE`; default: `period_param=FALSE`.
+* `period_min` estimated bottom range for period starting values when performing nonlinear regression; default: `period_min=20`.
+* `period_max` estimated upper range for period starting values when performing nonlinear regression; `period_max=28`, 
+
+If you are modelling non-circadian (but still rhythmic) data, with a much larger or smaller period than 24 hours, and you want to have the model estimate the period (`tau`) you can change `period_min` and `period_max` to more realistic ranges. This may reduce the time required for the model to converge.
+
+Note that when adding parameters to `decay_params`, you should call the name of the parameter in as it is in main_params - `decay_params=c("k")`, for example.  This will add a new parameter `k_decay` to the model.  If you want to add a grouping parameter to this decay parameter, you need to call the decay of mesor explicitly, `group_params=c("k_decay")`, as `"k"` alone would be referring to the mesor value, not the decay of mesor over time. 
+
+Similarly, when adding parameters as random-effects by adding to `rand_params`, we need to call the parameter name (including it's suffix: "`_decay`" for decay parameters and "`1`" for group parameters, or "`_decay1`" for grouped decay parameters).  If I wanted to fit a model with the default `main_params` as well as period (`tau`), a decay in mesor (`k`), and grouping on mesor decay rate, amplitude and phase, but not starting mesor:
+
+`control=list(main_params=c("k", "alpha", "phi", "tau"), decay_params=c("k"), group_params=c("k_decay", "alpha", "phi"))`
+
+The resulting model will assume that both groups have a shared mesor and period as `"k"` and `"tau"`, respectively, are excluded from `group_params`.  The model will estimate the period from the data. It will model the exponential decay in mesor as well as the influence of group assignment on this rate of decay.
+
+### Examples
+
+
+If you have repeated measures data, then it may be inappropriate to use a standard fixed effects only model. In this case, you should use a mixed model, with context-relevant random effects for the ID/subjects/mice from which you're obtaining repeated observations.
 
 Here, I have some data that has some simulated within-id correlation in terms of the amount of phase shift between groups. 
 
 ```{r}
-phi1_in <- 3.15
+phi1_in <- 3
 mixed_data <- function(n){
   counter <- 1
   for(i in 1:n){
@@ -166,12 +198,14 @@ ggplot(data=df[df$id %in% c(1:6),], aes(time, measure)) +
 
 ```
 
-For each ID, there are measurements in both groups (g1 and g2) but the degree of change in phase is ID-dependent.  The phase of group 1 is not ID-dependent, though, it's the amount of phase shift from g1 to g2 that is.  For this reason, we want to have a "random-slope" on the phase, so we should include "phi1" as a random effect. Also, since I know, from the data generating process, that both groups share the same mesor but not amplitude, I included `alpha` and `phi` as grouped parameters, but excluded `k`. I also know that the period is 24 hours, so I didn't bother fitting a parameter for `tau` either.
+For each subject (`id`), there are measurements in both groups (`g1` and `g2`) but the degree of change in phase between `g1` to `g2` is subject-dependent.  The phase of group 1 is not subject-dependent, though, as each subject has approximately the same phase in `g1`. However, it's the amount of phase shift from `g1` to `g2` that is subject-dependent. This is equivalent to each subject having a random slope term but not a random intercept.  In an experimental context, this could be the case when mice are kept under light-dark (LD) conditions `g1` and then moved to constant conditions (LL or DD), `g2`.  We would expect the phase to be consistent under the same conditions in `g1` but the change in phase when they are moved to LL or DD could be mouse-dependent.
+
+In this scenario, we want to have a "random-slope" on the phase, so we should include `phi1` as a random effect. Also, since we know (from the data generating process) that both groups share the same mesor but not amplitude, we included `alpha` and `phi` as grouped parameters, but excluded `k`. We also know that the period is 24 hours, so we didn't bother fitting a parameter period either (adding `"tau"` to `main_params`) so we left `main_params` at its default value: `main_params=c("k", "alpha", "phi")`. In the code above, we used:
+`control=list(grouped_params=c("alpha", "phi"), random_params=c("phi1"))`
 
 From the data generating process used above, we expect:
 
-* `phi1=1.5`
-* `k1=3`
+* `phi1=3`
 * `alpha1=5`
 
 ```{r}
@@ -184,63 +218,66 @@ summary$`95% CI ul` <- summary$estimate + summary$std_error*1.96
 summary
 ```
 
-The effects were all pretty well estimated, with each of the estimates being within the 95% confidence intervals from the model.  If we expect the subject's to have different starting phases but their change in phase between groups to be the same, we may have put the random effect on `phi` rather than `phi1`. 
+The effects were all pretty well estimated, given the 95% confidence intervals from the model outputs.  If we expect the subject's to have different starting phases but their change in phase between groups to be the same, we may have put the random effect on `phi` rather than `phi1`.
 
-Perhaps more commonly applicable would be if each subject has some random midpoint (baseline expression levels of the outcome).  In this case, it may be worthwhile to include `k` as a random effect. If `k` is included, this is equivalent to giving everyone (irrespective of group that they're assigned, if each subject is only included in one group) a "random intercept".
+Perhaps more commonly applicable would be if each subject has some random mesor or baseline expression level.  In this case, it may be worthwhile to include `k` as a random effect. If `k` is included, this is equivalent to giving all subjects a "random intercept" as baseline levels of the outcome for each subject will be the random effect.
 
 
-## Decay parameters and parametrizing period
+## Period and decay parameters
 
-There is the option to model the decay of parameters, as well as adding parameters to measure the difference in decay between groups. In this mode detailed model, we make simulated data with no difference in mesor or phase between groups, an unknown period (somewhere between 8 and 20 hours) that we want to estimate, and one group which has exponentially decaying amplitude at the rate:
+There is the option to add parameters to represent the decay of any rhythmic characteristic as well as the difference between groups for this decay. For model below, we make simulated data with no difference in mesor or phase between groups, a randomly generated period between 8 and 20 hours that we want to estimate (and will check at the end). We also have one group which has exponentially decaying amplitude at the rate:
 
 $$
 \alpha*e^{-\alpha_{decay}*t}
 $$
 Where `alpha` is the amplitude, and `t` is time in radian-hours.
 
-In our case, `alpha_decay` will be an unknown value, somewhere between 0.05 and 0.3.
+In our case, `alpha_decay` will be another randomly generated value, somewhere between 0.05 and 0.3, that we will check at the end.
 
-To model these data, we will include all the standard parameters as well as `tau` (to control the period) in the `main_params`:
+To model these data, we will include all the standard parameters as well as `tau` (to estimate the period) in the `main_params`:
   `main_params=c("k", "alpha", "phi", "tau")`
 
-We will include a term for amplitude in the `decay_params`:
+We will include the term for amplitude (`alpha`) in the `decay_params`:
   `decay_params=c("alpha")`
 
-And we will model the differences between groups for `alpha` and `alpha_decay`:
+And we will model the differences between groups for both the starting amplitude,`alpha`, and its decay over time `alpha_decay`:
   `grouped_params=c("alpha", "alpha_decay")`
 
 This produces the following model:
+
 `measure~k+((alpha+alpha1*x_group)*exp(-(alpha_decay+alpha_decay1*x_group)*time_r))*cos((24/(tau))*time_r-(phi))`
 
 ```{r}
 tau_in <- runif(1, 8, 20)
-alpha_decay1_in <- runif(1, 0.05, 0.3)
+alpha_decay1_in <- runif(1, 0.02, 0.05)
 
-df <- make_data(k1=0, alpha1=10, phi1=0, seed=42, hours=96, noise_sd=2)
+df <- make_data(k1=0, alpha1=10, phi1=0, seed=42, hours=120, noise_sd=2)
 df$time <- df$time/24*tau_in
 
-# note that decay is on a scale of time in radians, not time in hours.
-df$measure[df$group=="g2"] <- df$measure[df$group=="g2"]*exp(-alpha_decay1_in*(df$time*2*pi/24)[df$group=="g2"])
+# Note that when decay is estimated, it is on a scale of time in hours. There is no relation decay rate and the period.
+df$measure[df$group=="g2"] <- df$measure[df$group=="g2"]*exp(-alpha_decay1_in*df$time[df$group=="g2"])
+
 out_alpha_decay <-
   circacompare(x=df, "time", "group", "measure", period=NA,
   control=list(
-  main_params=c("k", "alpha", "phi", "tau"),
-  decay_params=c("alpha"),
-  grouped_params=c("alpha", "alpha_decay")
-))
+    main_params=c("k", "alpha", "phi", "tau"),
+    decay_params=c("alpha"),
+    grouped_params=c("alpha", "alpha_decay")
+  ))
 
 out_alpha_decay$plot
 
 summary <- as.data.frame(circacompare:::extract_model_coefs(out_alpha_decay$fit))
 summary$`95% CI ll` <- summary$estimate - summary$std_error*1.96
 summary$`95% CI ul` <- summary$estimate + summary$std_error*1.96
+summary$p_value <- NULL
 summary
 
 ```
-We now have estimates for the decay and the period, which were of interest.  Lets see the real values and check that they fell within the confidence intervals?
+We now have estimates and 95% confidence intervals for the difference in amplitude decay between groups (`alpha_decay1`) and the period (`tau`) that were of interest.  Lets see the values we used to generate the data and check that the confidence intervals were appropriate?
 
 ```{r}
-cat("Real period: ", tau_in, "\n\n",
+cat("Real period: ", tau_in, "\n",
     "Real alpha_decay: ", alpha_decay1_in, sep="")
 ```
 
@@ -249,7 +286,7 @@ Looks like our estimates and confidence intervals suited our now-known data gene
 
 ## Period and phase parameters
 
-It may be tempting to investigate the differences between two groups of rhythmic data regarding everything! But, unfortunately, there are limitations. If two groups of data are allowed to vary regarding their period, the interpretation of a difference in phase is no longer sensical.  For this reason, you cannot have both `tau` and `phi` within `group_params` in either `circacompare()` or `circacompare_mixed()`.
+It may be tempting to investigate the differences between two groups of rhythmic data regarding everything! But, unfortunately, there are limitations. If two groups of data are allowed to vary regarding their period, the interpretation of a difference in phase is no longer appropriate.  For example, if two rhythms have different periods, at what time are you wanting to know the difference in phase between the groups?  The amount of phase-shift will differ over time if they have different periods.  For this reason, you cannot have both `tau` and `phi` within `group_params` in either `circacompare()` or `circacompare_mixed()`.
 
 
 
