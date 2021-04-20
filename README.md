@@ -10,6 +10,18 @@ This work is published [here](https://academic.oup.com/bioinformatics/article-ab
 
 Rex Parsons, Richard Parsons, Nicholas Garner, Henrik Oster, Oliver Rawashdeh, CircaCompare: A method to estimate and statistically support differences in mesor, amplitude, and phase, between circadian rhythms, Bioinformatics, https://doi.org/10.1093/bioinformatics/btz730
 
+There have been several improvements to the package since initial release. In addition to what was available in 1.0.0 and described in the publication, the package offers approaches to:
+* Perform analysis on a single rhythmic dataset to estimate its mesor, amplitude and phase.
+* Choose to use a known period (user-determined) or to let the model estimate the period from the data.
+* Add parameters to estimate the exponential decay in any of the rhythmic characteristics.
+* Use a mixed-model instead of a fixed effects model to take into account within-subject correlation regarding any set of rhythmic parameters.
+* Perform a comparison between groups all or a subset of rhythmic characteristics.
+
+Please see the vignette for full details examples of these features.
+
+```
+browseVignettes(package="circacompare")
+```
 
 # Installation
 

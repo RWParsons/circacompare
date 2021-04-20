@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
   fig.height = 3.5
 )
 set.seed(42)
-# rmarkdown::render("vignettes/circacompare-vignette.Rmd")
+
 ```
 
 ## Updates since the initial release (circacompare 0.1.0) and [Bioinformatics journal article](https://doi.org/10.1093/bioinformatics/btz730).
@@ -46,12 +46,14 @@ library(ggplot2)
 ```
 
 ```{r}
+set.seed(42)
 data_single <- make_data(k1=0, alpha1=0, phi1=0, noise_sd=1)[c("time", "measure")]
 head(data_single)
 ```
 In the case that you have data from two groups and you're wishing to determine the differences in mesor, amplitude, or phase between them, you will need an additional column (with two possible values) representing the groups.
 
 ```{r}
+set.seed(42)
 data_grouped <- make_data(phi1=6, noise_sd=1)
 head(data_grouped)
 tail(data_grouped)
@@ -143,7 +145,7 @@ In `circa_single()` there are no groups to model differences between so `group_p
 
 For the `main_params` vector, the possible values are `k` for the mesor, `alpha` for amplitude, `phi` for phase, and `tau`. The only optional parameter of these in the `main_params` is `tau`, the rest must be included at all times.  The default is `main_params=c("k", "alpha", "phi")`, which excludes the parameterization of period in the model.  
 
-The values within `decay_params` must be a set within `main_params` as, for example, we can't model the decay in period, without modelling the starting period.  The default is to not model decay of any rhythmic characteristics: `decay_params=c()`.
+The values within `decay_params` must be a set within `main_params` as, for example, we can't model the decay in period, without modeling the starting period.  The default is to not model decay of any rhythmic characteristics: `decay_params=c()`.
 
 Additional possible arguments in the `control` list are: 
 
@@ -151,7 +153,7 @@ Additional possible arguments in the `control` list are:
 * `period_min` estimated bottom range for period starting values when performing nonlinear regression; default: `period_min=20`.
 * `period_max` estimated upper range for period starting values when performing nonlinear regression; `period_max=28`, 
 
-If you are modelling non-circadian (but still rhythmic) data, with a much larger or smaller period than 24 hours, and you want to have the model estimate the period (`tau`) you can change `period_min` and `period_max` to more realistic ranges. This may reduce the time required for the model to converge.
+If you are modeling non-circadian (but still rhythmic) data, with a much larger or smaller period than 24 hours, and you want to have the model estimate the period (`tau`) you can change `period_min` and `period_max` to more realistic ranges. This may reduce the time required for the model to converge.
 
 Note that when adding parameters to `decay_params`, you should call the name of the parameter in as it is in main_params - `decay_params=c("k")`, for example.  This will add a new parameter `k_decay` to the model.  If you want to add a grouping parameter to this decay parameter, you need to call the decay of mesor explicitly, `group_params=c("k_decay")`, as `"k"` alone would be referring to the mesor value, not the decay of mesor over time. 
 
@@ -169,6 +171,7 @@ If you have repeated measures data, then it may be inappropriate to use a standa
 Here, I have some data that has some simulated within-id correlation in terms of the amount of phase shift between groups. 
 
 ```{r}
+set.seed(42)
 phi1_in <- 3
 mixed_data <- function(n){
   counter <- 1
@@ -232,7 +235,7 @@ $$
 $$
 Where `alpha` is the amplitude, and `t` is time in radian-hours.
 
-In our case, `alpha_decay` will be another randomly generated value, somewhere between 0.05 and 0.3, that we will check at the end.
+In our case, `alpha_decay` will be another randomly generated value, somewhere between 0.02 and 0.05, that we will check at the end.
 
 To model these data, we will include all the standard parameters as well as `tau` (to estimate the period) in the `main_params`:
   `main_params=c("k", "alpha", "phi", "tau")`
@@ -248,6 +251,7 @@ This produces the following model:
 `measure~k+((alpha+alpha1*x_group)*exp(-(alpha_decay+alpha_decay1*x_group)*time_r))*cos((24/(tau))*time_r-(phi))`
 
 ```{r}
+set.seed(42)
 tau_in <- runif(1, 8, 20)
 alpha_decay1_in <- runif(1, 0.02, 0.05)
 
@@ -274,7 +278,7 @@ summary$p_value <- NULL
 summary
 
 ```
-We now have estimates and 95% confidence intervals for the difference in amplitude decay between groups (`alpha_decay1`) and the period (`tau`) that were of interest.  Lets see the values we used to generate the data and check that the confidence intervals were appropriate?
+We now have estimates and 95% confidence intervals for the difference in amplitude decay between groups (`alpha_decay1`) and the period (`tau`) that were of interest.  Lets see the values we used to generate the data and check that the confidence intervals were appropriate.
 
 ```{r}
 cat("Real period: ", tau_in, "\n",
@@ -284,9 +288,17 @@ cat("Real period: ", tau_in, "\n",
 Looks like our estimates and confidence intervals suited our now-known data generating process well!
 
 
-## Period and phase parameters
+## Limitations
+
+### Decay functions
+
+Currently, decay parameters are used to model exponential decay as this seemed sensible for most biological contexts. However, users may want to model decay as a linear (or some other) function. There is no implementation for this in the current package. If this is of interest to you, please contact me or create an issue on GitHub.
+
+### Period and phase parameters
 
 It may be tempting to investigate the differences between two groups of rhythmic data regarding everything! But, unfortunately, there are limitations. If two groups of data are allowed to vary regarding their period, the interpretation of a difference in phase is no longer appropriate.  For example, if two rhythms have different periods, at what time are you wanting to know the difference in phase between the groups?  The amount of phase-shift will differ over time if they have different periods.  For this reason, you cannot have both `tau` and `phi` within `group_params` in either `circacompare()` or `circacompare_mixed()`.
 
 
+### Model diagnostics and choice
 
+When using circa_single() or circacompare() a nonlinear regression model (with fixed-effects only) of class `nls` is fit.  When using circa_single_mixed() or circacompare_mixed() a nonlinear mixed regression model of class `nlme` is fit. Users should be aware of the assumptions of these models when interpreting the results. See [here](https://www.jstatsoft.org/article/view/v066i05) for a thorough discussion of model assumptions and performing diagnostic tests using the `{nlstools}` package.

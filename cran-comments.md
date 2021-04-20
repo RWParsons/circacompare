@@ -5,10 +5,12 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
+0 errors | 0 warnings | 0 note
 
-* This is a new release of a package and my first package submission to CRAN.  
+R CMD check succeeded
 
-* There is no News.md file as this is the first release to CRAN.
+## Release summary
 
-* The spelling mistake, 'mesor', is a well-accepted term meaning for 'midline estimating statistic of rhythm.'
+* This is the second release of this package to CRAN.
+
+* A NEWS.md file is included.

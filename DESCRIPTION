@@ -1,6 +1,6 @@
 Package: circacompare
 Title: Analyses of Circadian Data
-Version: 0.1.0.9000
+Version: 0.1.1
 Authors@R: 
     person(given = "Rex",
            family = "Parsons",
@@ -13,7 +13,6 @@ Description: Uses non-linear regression to statistically compare two circadian r
     Details can be found in Parsons et al (2020) <doi:10.1093/bioinformatics/btz730>.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
