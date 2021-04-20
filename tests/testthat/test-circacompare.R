@@ -29,7 +29,7 @@ test_that("circacompare() fits a good model to generated data", {
   # create some decay in one group for amplitude and test whether it's well estimated by the model.
   df <- make_data(k1=0, alpha1=10, phi1=0, seed=42, hours=96, noise_sd=2)
   df$time <- df$time/24*tau_in
-  alpha_decay1_in <- 0.2
+  alpha_decay1_in <- 0.05
   # note that decay is on a scale of time in radians, not time in hours.
   df$measure[df$group=="g2"] <- df$measure[df$group=="g2"]*exp(-alpha_decay1_in*df$time[df$group=="g2"])
 

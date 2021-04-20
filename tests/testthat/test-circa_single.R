@@ -15,8 +15,8 @@ test_that("circa_single works", {
                  ))
 
 
-  out_rhythmic_free_tau$plot + ggplot2::geom_vline(xintercept=out_rhythmic_free_tau$summary[5, 'value'])
-  out_rhythmic_free_tau$model
+  # out_rhythmic_free_tau$plot + ggplot2::geom_vline(xintercept=out_rhythmic_free_tau$summary[5, 'value'])
+
   data_arrhythmic <- make_data(alpha=0)
   data_arrhythmic <- data_arrhythmic[data_arrhythmic$group == "g1",]
   out_arrhythmic <- circa_single(x = data_arrhythmic, col_time = "time", col_outcome = "measure")
