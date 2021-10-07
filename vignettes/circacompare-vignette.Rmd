@@ -301,4 +301,4 @@ It may be tempting to investigate the differences between two groups of rhythmic
 
 ### Model diagnostics and choice
 
-When using circa_single() or circacompare() a nonlinear regression model (with fixed-effects only) of class `nls` is fit.  When using circa_single_mixed() or circacompare_mixed() a nonlinear mixed regression model of class `nlme` is fit. Users should be aware of the assumptions of these models when interpreting the results. See [here](https://www.jstatsoft.org/article/view/v066i05) for a thorough discussion of model assumptions and performing diagnostic tests using the `{nlstools}` package.
+When using circa_single() or circacompare() a nonlinear regression model (with fixed-effects only) of class `nls` is fit.  When using circa_single_mixed() or circacompare_mixed() a nonlinear mixed regression model of class `nlme` is fit. Users should be aware of the assumptions of these models when interpreting the results. See [here](https://doi.org/10.18637/jss.v066.i05) for a thorough discussion of model assumptions and performing diagnostic tests using the `{nlstools}` package.
