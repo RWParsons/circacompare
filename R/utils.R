@@ -24,7 +24,7 @@ model_each_group <- function(data, type, form=stats::as.formula("measure~k+alpha
     if(type=="nlme" & length(args$randomeffects)>0){
       ranefs <- intersect(controlVals$non_grouped_params, args$randomeffects)
       ranefs_formula <- stats::formula(paste(paste0(ranefs, collapse="+"), "~ 1 | id"))
-      fixefs_formula <- stats::formula(paste(paste0(controlVals$non_grouped_params, collapse="+"), "~ 1 | id"))
+      fixefs_formula <- stats::formula(paste(paste0(controlVals$non_grouped_params, collapse="+"), "~ 1"))
 
       fit <- try({nlme::nlme(model = form,
                              random = ranefs_formula,
