@@ -235,7 +235,7 @@ start_list_grouped <- function(g1, g2, grouped_params=c("k", "alpha", "phi")){
 }
 
 
-assess_model_estimates <- function(param_estimates){
+assess_model_estimates <- function(param_estimates, controlVals){
   res <- TRUE
 
   if("alpha" %in% names(param_estimates)){
@@ -256,13 +256,27 @@ assess_model_estimates <- function(param_estimates){
     }
   }
 
+  fx_check_period <- function(period) {
+    res <- TRUE
+    if(!is.null(controlVals$period_min)) {
+      res <- ifelse(period < controlVals$period_min, FALSE, res)
+    }
+    if(!is.null(controlVals$period_max)) {
+      res <- ifelse(period > controlVals$period_max, FALSE, res)
+    }
+
+    res <- ifelse(period < 0, FALSE, res)
+    return(res)
+  }
+
   if("tau" %in% names(param_estimates)){
-    res <- ifelse(param_estimates['tau']<0, FALSE, res)
+    res <- ifelse(!fx_check_period(param_estimates['tau']), FALSE, res)
   }
 
   if("tau1" %in% names(param_estimates)){
-    res <- ifelse(param_estimates['tau'] + param_estimates['tau1']<0, FALSE, res)
+    res <- ifelse(!fx_check_period(param_estimates['tau'] + param_estimates['tau1']), FALSE, res)
   }
+
   return(res)
 }
 

@@ -1,5 +1,5 @@
 test_that("circacompare() fits a good model to generated data", {
-  set.seed(40)
+  set.seed(42)
   tau_in <- 15
   phi1_in <- 12
   df <- make_data(phi1=(phi1_in/24)*(2*pi), noise_sd = 2)
@@ -9,7 +9,8 @@ test_that("circacompare() fits a good model to generated data", {
   out_tau_adjusted <- circacompare(x = df, col_time = "time", col_group = "group", col_outcome = "measure",
                                    period=NA,
                                    control = list(main_params=c("k", "alpha", "tau", "phi"),
-                                                  grouped_params=c("k",  "alpha", "phi")))
+                                                  grouped_params=c("k",  "alpha", "phi"),
+                                                  period_min=tau_in - 4, period_max=tau_in + 4))
 
   both_groups_rhythmic <- as.logical(out$summary[1, 'value']<0.05 & out$summary[2, 'value']<0.05)
   phase_shift_estimated_within_2hours <- abs(abs(out$summary[13,'value']) - phi1_in) < 2
@@ -22,7 +23,6 @@ test_that("circacompare() fits a good model to generated data", {
   tau_ll <- tau_est - 1.96*fit_tau['std_error']
   tau_ul <- tau_est + 1.96*fit_tau['std_error']
   expect_true(tau_in < tau_ul & tau_in > tau_ll) # period estimate is approx well estimated to be close to tau (ln 5)
-
 
 
   # create some longer time period data and keep all parameters the same except amplitude
@@ -38,7 +38,8 @@ test_that("circacompare() fits a good model to generated data", {
                  control=list(
                    main_params=c("k", "alpha", "phi", "tau"),
                    decay_params=c("alpha"),
-                   grouped_params=c("alpha", "alpha_decay")
+                   grouped_params=c("alpha", "alpha_decay"),
+                   period_min=tau_in - 4, period_max=tau_in + 4
                  ))
 
   fit_alpha_decay1 <- extract_model_coefs(out_alpha_decay$fit)['alpha_decay1', ]

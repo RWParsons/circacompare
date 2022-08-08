@@ -45,7 +45,9 @@ test_that("circa_single works", {
     period=NA,
     control=list(
       main_params=c("k", "alpha", "phi", "tau"),
-      decay_params=c("alpha")
+      decay_params=c("alpha"),
+      period_min=12,
+      period_max=20
     )
   )
   out_alpha_decay

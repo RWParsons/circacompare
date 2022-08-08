@@ -24,7 +24,7 @@ test_that("circa_single_mixed() works", {
   out_tau_adjusted <-
     circa_single_mixed(x = df, col_time = "time", col_outcome = "measure",
                        col_id = "id", randomeffects = c("k"), period=NA,
-                       control=list(period_param=T))
+                       control=list(period_param=T, period_min=tau_in-4, period_max=tau_in+4))
 
   fit_tau <- extract_model_coefs(out_tau_adjusted$fit)['tau', ]
   tau_est <- fit_tau['estimate']

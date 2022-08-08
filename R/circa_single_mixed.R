@@ -140,7 +140,7 @@ circa_single_mixed <- function (x,
     else {
       nlme_coefs <- extract_model_coefs(fit.nlme)
       V <- nlme_coefs[, 'estimate']
-      success <- assess_model_estimates(param_estimates=V)
+      success <- assess_model_estimates(param_estimates=V, controlVals=controlVals)
       n <- n + 1
     }
     if (n >= timeout_n) {
