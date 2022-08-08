@@ -154,8 +154,7 @@ circacompare <- function(x,
       },
       silent = FALSE
     )
-
-    if (class(fit.nls) == "try-error") {
+    if (inherits(fit.nls, "try-error")) {
       n <- n + 1
     } else {
       nls_coefs <- extract_model_coefs(fit.nls)
