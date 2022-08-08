@@ -15,7 +15,6 @@ knitr::opts_chunk$set(
   fig.height = 3.5
 )
 set.seed(42)
-
 ```
 
 ## Updates since the initial release (circacompare 0.1.0) and [Bioinformatics journal article](https://doi.org/10.1093/bioinformatics/btz730).
@@ -47,14 +46,14 @@ library(ggplot2)
 
 ```{r}
 set.seed(42)
-data_single <- make_data(k1=0, alpha1=0, phi1=0, noise_sd=1)[c("time", "measure")]
+data_single <- make_data(k1 = 0, alpha1 = 0, phi1 = 0, noise_sd = 1)[c("time", "measure")]
 head(data_single)
 ```
 In the case that you have data from two groups and you're wishing to determine the differences in mesor, amplitude, or phase between them, you will need an additional column (with two possible values) representing the groups.
 
 ```{r}
 set.seed(42)
-data_grouped <- make_data(phi1=6, noise_sd=1)
+data_grouped <- make_data(phi1 = 6, noise_sd = 1)
 head(data_grouped)
 tail(data_grouped)
 ```
@@ -65,7 +64,7 @@ tail(data_grouped)
 `circa_single()` is used to analyse a single rhythm and provide estimates of its mesor, amplitude and phase.
 
 ```{r}
-result <- circa_single(x=data_single, col_time="time", col_outcome="measure", period=24)
+result <- circa_single(x = data_single, col_time = "time", col_outcome = "measure", period = 24)
 
 result
 ```
@@ -92,7 +91,7 @@ The parameter estimates of time in radian-hours (`time_r` and `phi`) are convert
 `circacompare()` is used to analyse a dataset with two groups of rhythmic data. It fits a model to estimate and statistically support differences in mesor, amplitude and phase between the two groups.
 
 ```{r}
-result2 <- circacompare(x=data_grouped, col_time="time", col_group="group", col_outcome="measure")
+result2 <- circacompare(x = data_grouped, col_time = "time", col_group = "group", col_outcome = "measure")
 
 result2
 ```
@@ -173,13 +172,17 @@ Here, I have some data that has some simulated within-id correlation in terms of
 ```{r}
 set.seed(42)
 phi1_in <- 3
-mixed_data <- function(n){
+mixed_data <- function(n) {
   counter <- 1
-  for(i in 1:n){
-    x <- make_data(k1=0, alpha1=5, phi1=rnorm(1, phi1_in, 1), hours=72, noise_sd = 2)
+  for (i in 1:n) {
+    x <- make_data(k1 = 0, alpha1 = 5, phi1 = rnorm(1, phi1_in, 1), hours = 72, noise_sd = 2)
     x$id <- counter
     counter <- counter + 1
-    if(i==1){res <- x}else{res <- rbind(res, x)}
+    if (i == 1) {
+      res <- x
+    } else {
+      res <- rbind(res, x)
+    }
   }
   return(res)
 }
@@ -190,15 +193,14 @@ out <- circacompare_mixed(
   col_group = "group",
   col_outcome = "measure",
   col_id = "id",
-  control=list(grouped_params=c("alpha", "phi"), random_params=c("phi1")),
-  period=24
+  control = list(grouped_params = c("alpha", "phi"), random_params = c("phi1")),
+  period = 24
 )
 
-ggplot(data=df[df$id %in% c(1:6),], aes(time, measure)) + 
-  geom_point(aes(col=group)) + 
-  geom_smooth(aes(group=interaction(as.factor(id), group)), span=0.3)+
+ggplot(data = df[df$id %in% c(1:6), ], aes(time, measure)) +
+  geom_point(aes(col = group)) +
+  geom_smooth(aes(group = interaction(as.factor(id), group)), span = 0.3) +
   facet_wrap(~id)
-
 ```
 
 For each subject (`id`), there are measurements in both groups (`g1` and `g2`) but the degree of change in phase between `g1` to `g2` is subject-dependent.  The phase of group 1 is not subject-dependent, though, as each subject has approximately the same phase in `g1`. However, it's the amount of phase shift from `g1` to `g2` that is subject-dependent. This is equivalent to each subject having a random slope term but not a random intercept.  In an experimental context, this could be the case when mice are kept under light-dark (LD) conditions `g1` and then moved to constant conditions (LL or DD), `g2`.  We would expect the phase to be consistent under the same conditions in `g1` but the change in phase when they are moved to LL or DD could be mouse-dependent.
@@ -215,8 +217,8 @@ From the data generating process used above, we expect:
 out$plot
 
 summary <- as.data.frame(circacompare:::extract_model_coefs(out$fit))
-summary$`95% CI ll` <- summary$estimate - summary$std_error*1.96
-summary$`95% CI ul` <- summary$estimate + summary$std_error*1.96
+summary$`95% CI ll` <- summary$estimate - summary$std_error * 1.96
+summary$`95% CI ul` <- summary$estimate + summary$std_error * 1.96
 
 summary
 ```
@@ -255,34 +257,38 @@ set.seed(42)
 tau_in <- runif(1, 8, 20)
 alpha_decay1_in <- runif(1, 0.02, 0.05)
 
-df <- make_data(k1=0, alpha1=10, phi1=0, seed=42, hours=120, noise_sd=2)
-df$time <- df$time/24*tau_in
+df <- make_data(k1 = 0, alpha1 = 10, phi1 = 0, seed = 42, hours = 120, noise_sd = 2)
+df$time <- df$time / 24 * tau_in
 
 # Note that when decay is estimated, it is on a scale of time in hours. There is no relation decay rate and the period.
-df$measure[df$group=="g2"] <- df$measure[df$group=="g2"]*exp(-alpha_decay1_in*df$time[df$group=="g2"])
+df$measure[df$group == "g2"] <- df$measure[df$group == "g2"] * exp(-alpha_decay1_in * df$time[df$group == "g2"])
 
 out_alpha_decay <-
-  circacompare(x=df, "time", "group", "measure", period=NA,
-  control=list(
-    main_params=c("k", "alpha", "phi", "tau"),
-    decay_params=c("alpha"),
-    grouped_params=c("alpha", "alpha_decay")
-  ))
+  circacompare(
+    x = df, "time", "group", "measure", period = NA,
+    control = list(
+      main_params = c("k", "alpha", "phi", "tau"),
+      decay_params = c("alpha"),
+      grouped_params = c("alpha", "alpha_decay"),
+      period_min = 2, period_max = 24
+    )
+  )
 
 out_alpha_decay$plot
 
 summary <- as.data.frame(circacompare:::extract_model_coefs(out_alpha_decay$fit))
-summary$`95% CI ll` <- summary$estimate - summary$std_error*1.96
-summary$`95% CI ul` <- summary$estimate + summary$std_error*1.96
+summary$`95% CI ll` <- summary$estimate - summary$std_error * 1.96
+summary$`95% CI ul` <- summary$estimate + summary$std_error * 1.96
 summary$p_value <- NULL
 summary
-
 ```
 We now have estimates and 95% confidence intervals for the difference in amplitude decay between groups (`alpha_decay1`) and the period (`tau`) that were of interest.  Lets see the values we used to generate the data and check that the confidence intervals were appropriate.
 
 ```{r}
 cat("Real period: ", tau_in, "\n",
-    "Real alpha_decay: ", alpha_decay1_in, sep="")
+  "Real alpha_decay: ", alpha_decay1_in,
+  sep = ""
+)
 ```
 
 Looks like our estimates and confidence intervals suited our now-known data generating process well!
