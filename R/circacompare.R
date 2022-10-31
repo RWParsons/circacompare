@@ -30,10 +30,6 @@ circacompare <- function(x,
                          alpha_threshold = 0.05,
                          timeout_n = 10000,
                          control = list()) {
-  if (!"ggplot2" %in% utils::installed.packages()[, "Package"]) {
-    return(message("Please install 'ggplot2'"))
-  }
-
   controlVals <- circacompare_control()
   controlVals[names(control)] <- control
 
@@ -48,32 +44,32 @@ circacompare <- function(x,
   colnames(x) <- c("time", "group", "measure")
 
   if (length(levels(as.factor(x$group))) != 2) {
-    return(message("Your grouping variable had more or less than 2 levels! \nThis function is used to compare two groups of data. \nTo avoid me having to guess, please send data with only two possible values in your grouping variable to this function."))
+    stop("Your grouping variable had more or less than 2 levels! \nThis function is used to compare two groups of data. \nTo avoid me having to guess, please send data with only two possible values in your grouping variable to this function.")
   }
 
   if (!class(x$time) %in% c("numeric", "integer")) {
-    return(message(paste("The time variable which you gave was a '",
+    stop(paste("The time variable which you gave was a '",
       class(x$time),
       "' \nThis function expects time to be given as hours and be of class 'integer' or 'numeric'.",
       "\nPlease convert the time variable in your dataframe to be of one of these classes",
       sep = ""
-    )))
+    ))
   }
 
   if (!class(x$measure) %in% c("numeric", "integer")) {
-    return(message(paste("The measure variable which you gave was a '",
+    stop(paste("The measure variable which you gave was a '",
       class(x$measure),
       "' \nThis function expects measure to be number and be of class 'integer' or 'numeric'.",
       "\nPlease convert the measure variable in your dataframe to be of one of these classes",
       sep = ""
-    )))
+    ))
   }
 
   if (!class(period) %in% c("numeric", "integer") & !controlVals$period_param) {
-    return(message(paste0(
+    stop(paste0(
       "The period argument must be a number representing the period of the rhythm in hours\n",
       "If you would like the period to be estimated as part of the model, use:\ncontrol=list(period_param=TRUE)"
-    )))
+    ))
   }
 
   if (controlVals$period_param & !is.na(period)) {
@@ -111,7 +107,7 @@ circacompare <- function(x,
   )
 
   if (g1_model$timeout) {
-    return(message("Failed to converge", group_1_text, " model prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
+    stop("Failed to converge", group_1_text, " model prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript).")
   }
 
   g2_model <- model_each_group(
@@ -123,19 +119,19 @@ circacompare <- function(x,
     )
   )
   if (g2_model$timeout) {
-    return(message("Failed to converge", group_2_text, " model prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
+    stop("Failed to converge", group_2_text, " model prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript).")
   }
 
   both_groups_rhythmic <- ifelse(g1_model$rhythmic & g2_model$rhythmic, TRUE, FALSE)
 
   if (!both_groups_rhythmic) {
     if (!g1_model$rhythmic & !g2_model$rhythmic) {
-      return(message("Both groups of data were arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
+      stop("Both groups of data were arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups.")
     }
     if (!g1_model$rhythmic) {
-      return(message(group_1_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
+      stop(group_1_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups.")
     } else {
-      return(message(group_2_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups."))
+      stop(group_2_text, " was arrhythmic (to the power specified by the argument 'alpha_threshold').\nThe data was, therefore, not used for a comparison between the two groups.")
     }
   }
 
@@ -163,7 +159,7 @@ circacompare <- function(x,
       n <- n + 1
     }
     if (n > timeout_n) {
-      return(message("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
+      stop("Both groups of data were rhythmic but the curve fitting procedure failed due to timing out. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript).")
     }
   }
   if (!controlVals$period_param) {

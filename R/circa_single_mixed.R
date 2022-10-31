@@ -54,10 +54,6 @@ circa_single_mixed <- function(x,
                                timeout_n = 10000,
                                return_figure = TRUE,
                                control = list()) {
-  if (!requireNamespace("ggplot2", quietly = TRUE) & return_figure) {
-    return(message("Please install 'ggplot2'"))
-  }
-
   controlVals <- circa_single_mixed_control()
   controlVals[names(control)] <- control
 
@@ -80,34 +76,34 @@ circa_single_mixed <- function(x,
   }
 
   if (length(setdiff(randomeffects, p)) != 0) {
-    return(message('"randomeffects" should only include the names of parameters\nthat represent rhythmic characteristics in the model.\nThey should be a subset of, or equal to c("k", "alpha", "phi")'))
+    stop('"randomeffects" should only include the names of parameters\nthat represent rhythmic characteristics in the model.\nThey should be a subset of, or equal to c("k", "alpha", "phi")')
   }
 
   if (length(randomeffects) == 0) {
-    return(message("If you do not want to include any random effects, than you ought to use 'circa_single' rather than 'circa_single_mixed'"))
+    stop("If you do not want to include any random effects, than you ought to use 'circa_single' rather than 'circa_single_mixed'")
   }
 
   if (!class(x$time) %in% c("numeric", "integer")) {
-    return(message(paste("The time variable which you gave was a '",
+    stop(paste("The time variable which you gave was a '",
       class(x$time), "' \nThis function expects time to be given as hours and be of class 'integer' or 'numeric'.",
       "\nPlease convert the time variable in your dataframe to be of one of these classes",
       sep = ""
-    )))
+    ))
   }
 
   if (!class(x$measure) %in% c("numeric", "integer")) {
-    return(message(paste("The measure variable which you gave was a '",
+    stop(paste("The measure variable which you gave was a '",
       class(x$measure), "' \nThis function expects measure to be number and be of class 'integer' or 'numeric'.",
       "\nPlease convert the measure variable in your dataframe to be of one of these classes",
       sep = ""
-    )))
+    ))
   }
 
   if (!class(period) %in% c("numeric", "integer") & !controlVals$period_param) {
-    return(message(paste0(
+    stop(paste0(
       "The period argument must be a number representing the period of the rhythm in hours\n",
       "If you would like the period to be estimated as part of the model, use:\ncontrol=list(period_param=TRUE)"
-    )))
+    ))
   }
 
   if (controlVals$period_param & !is.na(period)) {
@@ -160,7 +156,7 @@ circa_single_mixed <- function(x,
       n <- n + 1
     }
     if (n >= timeout_n) {
-      return(message("Failed to converge data prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript)."))
+      stop("Failed to converge data prior to timeout. \nYou may try to increase the allowed attempts before timeout by increasing the value of the 'timeout_n' argument or setting a new seed before this function.\nIf you have repeated difficulties, please contact me (via github) or Oliver Rawashdeh (contact details in manuscript).")
     }
   }
   data_rhythmic <- nlme_coefs["alpha", "p_value"] < alpha_threshold

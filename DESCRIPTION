@@ -17,8 +17,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
     ggplot2 (>= 2.2.1),
-    stats,
-    utils
+    stats
 Suggests: 
     testthat (>= 3.0.0),
     nlme,

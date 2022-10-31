@@ -1,6 +1,5 @@
 utils::globalVariables(c("time", "measure", "group", "eq", "eq_1", "eq_2"))
 
-
 extract_model_coefs <- function(model) {
   if ("nls" %in% class(model)) {
     results <- summary(model)$coef[, c(1, 2, 4)]
