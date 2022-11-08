@@ -148,7 +148,7 @@ circacompare_mixed <- function(x,
   randomeffects_single <- intersect(controlVals$non_grouped_params, controlVals$random_params)
 
   g1_model <- model_each_group(
-    data = dat_group_1, type = "nlme", form = form_single,
+    data = dat_group_1, type = controlVals$fit_group_models_method, form = form_single,
     controlVals = controlVals,
     args = list(
       timeout_n = timeout_n,
@@ -165,7 +165,7 @@ circacompare_mixed <- function(x,
   }
 
   g2_model <- model_each_group(
-    data = dat_group_2, type = "nlme", form = form_single,
+    data = dat_group_2, type = controlVals$fit_group_models_method, form = form_single,
     controlVals = controlVals,
     args = list(
       timeout_n = timeout_n,
@@ -271,10 +271,12 @@ circacompare_mixed <- function(x,
 circacompare_mixed_control <- function(period_param = F, period_min = 20, period_max = 28,
                                        main_params = c("k", "alpha", "phi"),
                                        grouped_params = c("k", "alpha", "phi"),
-                                       decay_params = c(), random_params = c()) {
+                                       decay_params = c(), random_params = c(),
+                                       fit_group_models_method = "nlme") {
   list(
     period_param = period_param, period_min = period_min, period_max = period_max,
     main_params = main_params, grouped_params = grouped_params,
-    decay_params = decay_params, random_params = random_params
+    decay_params = decay_params, random_params = random_params,
+    fit_group_models_method = fit_group_models_method
   )
 }
