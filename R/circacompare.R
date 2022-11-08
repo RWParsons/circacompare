@@ -11,6 +11,7 @@
 #' @param alpha_threshold The level of alpha for which the presence of rhythmicity is considered. Default is 0.05.
 #' @param timeout_n The upper limit for the model fitting attempts. Default is 10,000.
 #' @param control \code{list}. Used to control the parameterization of the model.
+#' @param suppress_all Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.
 #'
 #' @return list
 #' @export
@@ -29,7 +30,8 @@ circacompare <- function(x,
                          period = 24,
                          alpha_threshold = 0.05,
                          timeout_n = 10000,
-                         control = list()) {
+                         control = list(),
+                         suppress_all = FALSE) {
   controlVals <- circacompare_control()
   controlVals[names(control)] <- control
 
@@ -102,7 +104,8 @@ circacompare <- function(x,
     controlVals = controlVals,
     args = list(
       timeout_n = timeout_n,
-      alpha_threshold = alpha_threshold
+      alpha_threshold = alpha_threshold,
+      suppress_all = suppress_all
     )
   )
 
@@ -115,7 +118,8 @@ circacompare <- function(x,
     controlVals = controlVals,
     args = list(
       timeout_n = timeout_n,
-      alpha_threshold = alpha_threshold
+      alpha_threshold = alpha_threshold,
+      suppress_all = suppress_all
     )
   )
   if (g2_model$timeout) {
@@ -148,7 +152,7 @@ circacompare <- function(x,
           control = stats::nls.control(maxiter = 100, minFactor = 1 / 10000)
         )
       },
-      silent = FALSE
+      silent = suppress_all
     )
     if (inherits(fit.nls, "try-error")) {
       n <- n + 1

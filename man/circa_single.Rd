@@ -12,7 +12,8 @@ circa_single(
   alpha_threshold = 0.05,
   timeout_n = 10000,
   return_figure = TRUE,
-  control = list()
+  control = list(),
+  suppress_all = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ circa_single(
 \item{return_figure}{Whether or not to return a ggplot graph of the rhythm and cosine model.}
 
 \item{control}{\code{list}. Used to control the parameterization of the model.}
+
+\item{suppress_all}{Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.}
 }
 \value{
 list
@@ -40,6 +43,6 @@ list
 }
 \examples{
 df <- make_data()
-df <- df[df$group=="g1",]
-circa_single(x = df, col_time = "time", col_outcome="measure")
+df <- df[df$group == "g1", ]
+circa_single(x = df, col_time = "time", col_outcome = "measure")
 }

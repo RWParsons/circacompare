@@ -14,7 +14,7 @@ circa_single_mixed(
   alpha_threshold = 0.05,
   nlme_control = list(),
   nlme_method = "ML",
-  verbose = FALSE,
+  suppress_all = FALSE,
   timeout_n = 10000,
   return_figure = TRUE,
   control = list()
@@ -39,7 +39,7 @@ circa_single_mixed(
 
 \item{nlme_method}{A character string. If "REML" the model is fit by maximizing the restricted log-likelihood. If "ML" the log-likelihood is maximized. Defaults to "ML".}
 
-\item{verbose}{An optional logical value. If \code{TRUE} information on the evolution of the iterative algorithm is printed. Default is \code{FALSE}.}
+\item{suppress_all}{Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}. If \code{FALSE}, also runs \code{nlme()} with \code{verbose = TRUE}.}
 
 \item{timeout_n}{The upper limit for the model fitting attempts. Default is \code{10000}.}
 
@@ -55,17 +55,23 @@ list
 }
 \examples{
 set.seed(42)
-mixed_data <- function(n){
+mixed_data <- function(n) {
   counter <- 1
-  for(i in 1:n){
-      x <- make_data(k1=rnorm(1, 10, 2), alpha1=0, phi1=0)
-      x$id <- counter
-      counter <- counter + 1
-      if(i==1){res <- x}else{res <- rbind(res, x)}
+  for (i in 1:n) {
+    x <- make_data(k1 = rnorm(1, 10, 2), alpha1 = 0, phi1 = 0)
+    x$id <- counter
+    counter <- counter + 1
+    if (i == 1) {
+      res <- x
+    } else {
+      res <- rbind(res, x)
+    }
   }
   return(res)
 }
-df <- mixed_data(n=50)
-out <- circa_single_mixed(x = df, col_time = "time", col_outcome = "measure",
-                         col_id = "id", randomeffects = c("k"))
+df <- mixed_data(n = 50)
+out <- circa_single_mixed(
+  x = df, col_time = "time", col_outcome = "measure",
+  col_id = "id", randomeffects = c("k")
+)
 }

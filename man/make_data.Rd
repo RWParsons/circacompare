@@ -45,5 +45,5 @@ data.frame
 Generate example circadian data with specified phase shift between groups
 }
 \examples{
-data <- make_data(k1=3, alpha1=4, phi1 = 6)
+data <- make_data(k1 = 3, alpha1 = 4, phi1 = 6)
 }

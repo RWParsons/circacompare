@@ -13,7 +13,7 @@
 #' @param alpha_threshold The level of alpha for which the presence of rhythmicity is considered. Default is to \code{0.05}.
 #' @param nlme_control A list of control values for the estimation algorithm to replace the default values returned by the function nlme::nlmeControl. Defaults to an empty list.
 #' @param nlme_method A character string. If "REML" the model is fit by maximizing the restricted log-likelihood. If "ML" the log-likelihood is maximized. Defaults to "REML".
-#' @param verbose An optional logical value. If \code{TRUE} information on the evolution of the iterative algorithm is printed. Default is \code{FALSE}.
+#' @param suppress_all Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}. If \code{FALSE}, also runs \code{nlme()} with \code{verbose = TRUE}.
 #' @param timeout_n The upper limit for the model fitting attempts. Default is \code{10000}.
 #' @param control \code{list}. Used to control the parameterization of the model.
 #'
@@ -60,7 +60,7 @@ circacompare_mixed <- function(x,
                                alpha_threshold = 0.05,
                                nlme_control = list(),
                                nlme_method = "REML",
-                               verbose = FALSE,
+                               suppress_all = FALSE,
                                timeout_n = 10000,
                                control = list()) {
   if (!requireNamespace("nlme", quietly = TRUE)) {
@@ -156,7 +156,7 @@ circacompare_mixed <- function(x,
       randomeffects = randomeffects_single,
       nlme_method = nlme_method,
       nlme_control = nlme_control,
-      verbose = verbose
+      suppress_all = suppress_all
     )
   )
 
@@ -173,7 +173,7 @@ circacompare_mixed <- function(x,
       randomeffects = randomeffects_single,
       nlme_method = nlme_method,
       nlme_control = nlme_control,
-      verbose = verbose
+      suppress_all = suppress_all
     )
   )
   if (g2_model$timeout) {
@@ -210,10 +210,10 @@ circacompare_mixed <- function(x,
           start = unlist(start_list_grouped(g1 = g1_model$model, g2 = g2_model$model, grouped_params = controlVals$grouped_params)),
           method = nlme_method,
           control = nlme_control,
-          verbose = verbose
+          verbose = !suppress_all
         )
       },
-      silent = ifelse(verbose, FALSE, TRUE)
+      silent = ifelse(suppress_all, TRUE, FALSE)
     )
 
     if ("try-error" %in% class(fit.nlme)) {

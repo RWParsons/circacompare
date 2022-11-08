@@ -60,3 +60,40 @@ test_that("circa_single works", {
   alpha_decay_ul <- alpha_decay_est + 1.96 * fit_alpha_decay["std_error"]
   expect_true(alpha_decay_in < alpha_decay_ul & alpha_decay_in > alpha_decay_ll)
 })
+
+
+### make test to capture output and test that running with/without suppress_all works to suppress messages to console
+test_that("suppress_all works", {
+  y <- structure(list(
+    time = c(
+      1L, 1L, 1L, 1L, 5L, 5L, 9L, 9L, 13L,
+      13L, 17L, 17L, 17L, 21L, 21L, 21L
+    ),
+    value = c(
+      6.46491702175632,
+      6.37210528510888, 6.75505623236344, 6.4457897862926, 6.63766950190431,
+      6.48725138475295, 6.40819847507183, 6.42253808100338, 6.37486222182972,
+      6.51868394085349, 6.41506838906571, 6.40449437273951, 6.47273627195726,
+      6.76905314588271, 6.59233676207294, 6.44481187866212
+    )
+  ),
+  class = "data.frame", row.names = c(NA, -16L)
+  )
+
+  set.seed(1)
+  output <- capture.output(
+    {
+      circa_single(x = y, col_time = "time", col_outcome = "value", return_figure = FALSE)
+    },
+    type = "message"
+  )
+  expect_true(length(output) > 1)
+
+  output <- capture.output(
+    {
+      circa_single(x = y, col_time = "time", col_outcome = "value", return_figure = FALSE, suppress_all = TRUE)
+    },
+    type = "message"
+  )
+  expect_true(length(output) == 0)
+})

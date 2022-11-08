@@ -12,7 +12,8 @@ circacompare(
   period = 24,
   alpha_threshold = 0.05,
   timeout_n = 10000,
-  control = list()
+  control = list(),
+  suppress_all = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ circacompare(
 \item{timeout_n}{The upper limit for the model fitting attempts. Default is 10,000.}
 
 \item{control}{\code{list}. Used to control the parameterization of the model.}
+
+\item{suppress_all}{Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.}
 }
 \value{
 list
@@ -40,7 +43,9 @@ list
 }
 \examples{
 df <- make_data(phi1 = 6)
-out <- circacompare(x = df, col_time = "time", col_group = "group",
-                    col_outcome = "measure")
+out <- circacompare(
+  x = df, col_time = "time", col_group = "group",
+  col_outcome = "measure"
+)
 out
 }

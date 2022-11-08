@@ -12,7 +12,7 @@
 #' @param alpha_threshold The level of alpha for which the presence of rhythmicity is considered. Default is to \code{0.05}.
 #' @param nlme_control A list of control values for the estimation algorithm to replace the default values returned by the function nlme::nlmeControl. Defaults to an empty list.
 #' @param nlme_method A character string. If "REML" the model is fit by maximizing the restricted log-likelihood. If "ML" the log-likelihood is maximized. Defaults to "ML".
-#' @param verbose An optional logical value. If \code{TRUE} information on the evolution of the iterative algorithm is printed. Default is \code{FALSE}.
+#' @param suppress_all Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}. If \code{FALSE}, also runs \code{nlme()} with \code{verbose = TRUE}.
 #' @param timeout_n The upper limit for the model fitting attempts. Default is \code{10000}.
 #' @param return_figure Whether or not to return a ggplot graph of the rhythm and cosine model.
 #' @param control \code{list}. Used to control the parameterization of the model.
@@ -50,7 +50,7 @@ circa_single_mixed <- function(x,
                                alpha_threshold = 0.05,
                                nlme_control = list(),
                                nlme_method = "ML",
-                               verbose = FALSE,
+                               suppress_all = FALSE,
                                timeout_n = 10000,
                                return_figure = TRUE,
                                control = list()) {
@@ -141,10 +141,10 @@ circa_single_mixed <- function(x,
           start = unlist(start_list(outcome = x$measure, controlVals = controlVals)),
           control = nlme_control,
           method = nlme_method,
-          verbose = verbose
+          verbose = !suppress_all
         )
       },
-      silent = ifelse(verbose, FALSE, TRUE)
+      silent = ifelse(suppress_all, TRUE, FALSE)
     )
 
     if ("try-error" %in% class(fit.nlme)) {

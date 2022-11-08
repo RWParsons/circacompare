@@ -14,9 +14,10 @@ extract_model_coefs <- function(model) {
 
 model_each_group <- function(data, type, form = stats::as.formula("measure~k+alpha*cos(time_r-phi)"),
                              controlVals = list(),
-                             args = list(timeout_n = 10000, alpha_threshold = 0.05)) {
+                             args = list(timeout_n = 10000, alpha_threshold = 0.05, suppress_all = FALSE)) {
   success <- FALSE
   n <- 0
+
   while (!success) {
     starting_params <- start_list(outcome = data$measure, controlVals = controlVals)
     # use the nls function below if the only random effects are on group parameters
@@ -49,7 +50,7 @@ model_each_group <- function(data, type, form = stats::as.formula("measure~k+alp
             start = starting_params
           )
         },
-        silent = TRUE
+        silent = args$suppress_all
       )
     }
 

@@ -11,6 +11,7 @@
 #' @param timeout_n The upper limit for the model fitting attempts. Default is 10,000.
 #' @param return_figure Whether or not to return a ggplot graph of the rhythm and cosine model.
 #' @param control \code{list}. Used to control the parameterization of the model.
+#' @param suppress_all Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.
 #'
 #' @return list
 #' @export
@@ -26,7 +27,8 @@ circa_single <- function(x,
                          alpha_threshold = 0.05,
                          timeout_n = 10000,
                          return_figure = TRUE,
-                         control = list()) {
+                         control = list(),
+                         suppress_all = FALSE) {
   controlVals <- circa_single_control()
   controlVals[names(control)] <- control
 
@@ -92,7 +94,7 @@ circa_single <- function(x,
           start = start_list(outcome = x$measure, controlVals = controlVals)
         )
       },
-      silent = FALSE
+      silent = suppress_all
     )
     if (inherits(fit.nls, "try-error")) {
       n <- n + 1

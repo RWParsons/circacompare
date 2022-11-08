@@ -15,7 +15,7 @@ circacompare_mixed(
   alpha_threshold = 0.05,
   nlme_control = list(),
   nlme_method = "REML",
-  verbose = FALSE,
+  suppress_all = FALSE,
   timeout_n = 10000,
   control = list()
 )
@@ -41,7 +41,7 @@ circacompare_mixed(
 
 \item{nlme_method}{A character string. If "REML" the model is fit by maximizing the restricted log-likelihood. If "ML" the log-likelihood is maximized. Defaults to "REML".}
 
-\item{verbose}{An optional logical value. If \code{TRUE} information on the evolution of the iterative algorithm is printed. Default is \code{FALSE}.}
+\item{suppress_all}{Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}. If \code{FALSE}, also runs \code{nlme()} with \code{verbose = TRUE}.}
 
 \item{timeout_n}{The upper limit for the model fitting attempts. Default is \code{10000}.}
 
@@ -58,13 +58,17 @@ list
 set.seed(99)
 phi1_in <- 3.15
 
-mixed_data <- function(n){
+mixed_data <- function(n) {
   counter <- 1
-  for(i in 1:n){
-    x <- make_data(k1=0, alpha1=0, phi1=rnorm(1, phi1_in, 0.5), hours=72, noise_sd = 1)
+  for (i in 1:n) {
+    x <- make_data(k1 = 0, alpha1 = 0, phi1 = rnorm(1, phi1_in, 0.5), hours = 72, noise_sd = 1)
     x$id <- counter
     counter <- counter + 1
-    if(i==1){res <- x}else{res <- rbind(res, x)}
+    if (i == 1) {
+      res <- x
+    } else {
+      res <- rbind(res, x)
+    }
   }
   return(res)
 }
@@ -75,7 +79,8 @@ out <- circacompare_mixed(
   col_group = "group",
   col_outcome = "measure",
   col_id = "id",
-  control=list(grouped_params=c("phi"), random_params=c("phi1"))
+  control = list(grouped_params = c("phi"), random_params = c("phi1"))
 )
 out
+
 }
