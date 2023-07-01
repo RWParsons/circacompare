@@ -11,6 +11,7 @@
 #' @param alpha_threshold The level of alpha for which the presence of rhythmicity is considered. Default is 0.05.
 #' @param timeout_n The upper limit for the model fitting attempts. Default is 10,000.
 #' @param control \code{list}. Used to control the parameterization of the model.
+#' @param sample_weights a numeric vector of per-sample weights (one per sample) to allow downweighting of outliers in the differential analysis
 #' @param suppress_all Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.
 #'
 #' @return list
@@ -23,6 +24,13 @@
 #'   col_outcome = "measure"
 #' )
 #' out
+#' # with sample weights
+#' set.seed(1)
+#' sw <- jitter(rep(1, nrow(df)), factor=2)
+#' out <- circacompare(
+#'   x = df, col_time = "time", col_group = "group",
+#'   col_outcome = "measure", sample_weights = sw
+#' )
 circacompare <- function(x,
                          col_time,
                          col_group,
@@ -31,6 +39,7 @@ circacompare <- function(x,
                          alpha_threshold = 0.05,
                          timeout_n = 10000,
                          control = list(),
+                         sample_weights = NULL,
                          suppress_all = FALSE) {
   controlVals <- circacompare_control()
   controlVals[names(control)] <- control
@@ -51,19 +60,19 @@ circacompare <- function(x,
 
   if (!class(x$time) %in% c("numeric", "integer")) {
     stop(paste("The time variable which you gave was a '",
-      class(x$time),
-      "' \nThis function expects time to be given as hours and be of class 'integer' or 'numeric'.",
-      "\nPlease convert the time variable in your dataframe to be of one of these classes",
-      sep = ""
+               class(x$time),
+               "' \nThis function expects time to be given as hours and be of class 'integer' or 'numeric'.",
+               "\nPlease convert the time variable in your dataframe to be of one of these classes",
+               sep = ""
     ))
   }
 
   if (!class(x$measure) %in% c("numeric", "integer")) {
     stop(paste("The measure variable which you gave was a '",
-      class(x$measure),
-      "' \nThis function expects measure to be number and be of class 'integer' or 'numeric'.",
-      "\nPlease convert the measure variable in your dataframe to be of one of these classes",
-      sep = ""
+               class(x$measure),
+               "' \nThis function expects measure to be number and be of class 'integer' or 'numeric'.",
+               "\nPlease convert the measure variable in your dataframe to be of one of these classes",
+               sep = ""
     ))
   }
 
@@ -139,6 +148,13 @@ circacompare <- function(x,
     }
   }
 
+  if(!is.null(sample_weights)){
+    l.weights <- length(sample_weights)
+    if(l.weights != nrow(x) | sum(is.na(sample_weights)) > 0 | sum(sample_weights <= 0) > 0 | !is.numeric(sample_weights))
+      stop("sample_weights must be numeric, positive, non-zero, non-NA and of same length as the number of rows in x")
+    x$sample_weights <- sample_weights
+  } else x$sample_weights <- rep(1, nrow(x))
+
   n <- 0
   success <- FALSE
   form_group <- create_formula(main_params = controlVals$main_params, decay_params = controlVals$decay_params, grouped_params = controlVals$grouped_params)$formula
@@ -149,7 +165,8 @@ circacompare <- function(x,
           formula = form_group,
           data = x,
           start = start_list_grouped(g1 = g1_model$model, g2 = g2_model$model, grouped_params = controlVals$grouped_params),
-          control = stats::nls.control(maxiter = 100, minFactor = 1 / 10000)
+          control = stats::nls.control(maxiter = 100, minFactor = 1 / 10000),
+          weights = sample_weights
         )
       },
       silent = suppress_all

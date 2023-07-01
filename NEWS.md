@@ -1,3 +1,10 @@
+# circacompare 0.1.1.9001
+
+## Improvements
+
+* allow per-sample weights in `circacompare()`. This is experimental as it has only been added to the
+`nls()` function that runs the actual differential analysis, not to the ones in the `model_each_group` function which models both groups separately to assess per-group rhythmicity.
+
 # circacompare 0.1.1.9000
 
 ## Improvements

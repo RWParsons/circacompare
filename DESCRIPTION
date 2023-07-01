@@ -14,7 +14,7 @@ Description: Uses non-linear regression to statistically compare two circadian r
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 Imports: 
     ggplot2 (>= 2.2.1),
     stats
