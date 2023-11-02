@@ -34,7 +34,7 @@ circacompare(
 
 \item{control}{\code{list}. Used to control the parameterization of the model.}
 
-\item{sample_weights}{a numeric vector of per-sample weights (one per sample) to allow downweighting of outliers in the differential analysis}
+\item{sample_weights}{A numeric vector of per-sample weights to allow downweighting of outlier samples.}
 
 \item{suppress_all}{Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.}
 }
@@ -51,11 +51,14 @@ out <- circacompare(
   col_outcome = "measure"
 )
 out
-# with sample weights
+
+# with sample weights (arbitrary weights for demonstration)
 set.seed(1)
 sw <- jitter(rep(1, nrow(df)), factor=2)
-out <- circacompare(
+out2 <- circacompare(
   x = df, col_time = "time", col_group = "group",
   col_outcome = "measure", sample_weights = sw
 )
+out2
+
 }

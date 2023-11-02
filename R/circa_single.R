@@ -11,6 +11,7 @@
 #' @param timeout_n The upper limit for the model fitting attempts. Default is 10,000.
 #' @param return_figure Whether or not to return a ggplot graph of the rhythm and cosine model.
 #' @param control \code{list}. Used to control the parameterization of the model.
+#' @param sample_weights A numeric vector of per-sample weights to allow downweighting of outlier samples.
 #' @param suppress_all Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.
 #'
 #' @return list
@@ -19,7 +20,15 @@
 #' @examples
 #' df <- make_data()
 #' df <- df[df$group == "g1", ]
-#' circa_single(x = df, col_time = "time", col_outcome = "measure")
+#' out <- circa_single(x = df, col_time = "time", col_outcome = "measure")
+#' out
+#' 
+#' # with sample weights (arbitrary weights for demonstration)
+#' set.seed(1)
+#' sw <- jitter(rep(1, nrow(df)), factor=1.5)
+#' out2 <- circa_single(x = df, col_time = "time", col_outcome = "measure", sample_weights = sw, suppress_all = TRUE)
+#' out2
+#' 
 circa_single <- function(x,
                          col_time,
                          col_outcome,
@@ -28,6 +37,7 @@ circa_single <- function(x,
                          timeout_n = 10000,
                          return_figure = TRUE,
                          control = list(),
+                         sample_weights = NULL,
                          suppress_all = FALSE) {
   controlVals <- circa_single_control()
   controlVals[names(control)] <- control
@@ -81,6 +91,14 @@ circa_single <- function(x,
       ))
     }
   }
+  
+  if(!is.null(sample_weights)){
+    l.weights <- length(sample_weights)
+    if(l.weights != nrow(x) | sum(is.na(sample_weights)) > 0 | sum(sample_weights <= 0) > 0 | !is.numeric(sample_weights))
+      stop("sample_weights must be numeric, positive, non-zero, non-NA and of same length as the number of rows in x")
+    x$sample_weights <- sample_weights
+  } else x$sample_weights <- rep(1, nrow(x))
+  
   success <- FALSE
   n <- 0
   form <- create_formula(main_params = controlVals$main_params, decay_params = controlVals$decay_params)$formula
@@ -91,7 +109,8 @@ circa_single <- function(x,
         stats::nls(
           formula = form,
           data = x,
-          start = start_list(outcome = x$measure, controlVals = controlVals)
+          start = start_list(outcome = x$measure, controlVals = controlVals),
+          weights = sample_weights
         )
       },
       silent = suppress_all

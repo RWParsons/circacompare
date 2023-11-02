@@ -47,7 +47,8 @@ model_each_group <- function(data, type, form = stats::as.formula("measure~k+alp
           stats::nls(
             formula = form,
             data = data,
-            start = starting_params
+            start = starting_params,
+            weights = sample_weights # come from "data" object via the circacompare() and circa_single() functions
           )
         },
         silent = args$suppress_all

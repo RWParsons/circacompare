@@ -6,7 +6,11 @@ Authors@R:
            family = "Parsons",
            role = c("aut", "cre"),
            email = "Rex.Parsons94@gmail.com",
-           comment = c(ORCID = "0000-0002-6053-8174"))
+           comment = c(ORCID = "0000-0002-6053-8174")),
+    person(given = "Alexander",
+           family = "Bender",
+           role = c("ctb"),
+           email = "atpoint90@gmail.com")
 Description: Uses non-linear regression to statistically compare two circadian rhythms.
     Groups are only compared if both are rhythmic (amplitude is non-zero).
     Performs analyses regarding mesor, phase, and amplitude, reporting on estimates and statistical differences, for each, between groups.

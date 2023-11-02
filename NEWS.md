@@ -2,8 +2,7 @@
 
 ## Improvements
 
-* allow per-sample weights in `circacompare()`. This is experimental as it has only been added to the
-`nls()` function that runs the actual differential analysis, not to the ones in the `model_each_group` function which models both groups separately to assess per-group rhythmicity.
+* allow per-sample weights in `circacompare()` and `circa_single()`. This allows to downweight individual samples, for example in the case of outliers rather than hard-filtered them which reduces power. Such per-sample weights can reproducibly be estimated using approaches such as `arrayWeights()` in the [limma](https://bioconductor.org/packages/release/bioc/html/limma.html) package for datasets with many genes/observations, such as RNA-seq or microarrays.
 
 # circacompare 0.1.1.9000
 
