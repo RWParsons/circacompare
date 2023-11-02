@@ -18,6 +18,8 @@ model_each_group <- function(data, type, form = stats::as.formula("measure~k+alp
   success <- FALSE
   n <- 0
 
+  if(!"sample_weights" %in% colnames(data)) data$sample_weights <- rep(1, nrow(data))
+    
   while (!success) {
     starting_params <- start_list(outcome = data$measure, controlVals = controlVals)
     # use the nls function below if the only random effects are on group parameters
@@ -48,7 +50,7 @@ model_each_group <- function(data, type, form = stats::as.formula("measure~k+alp
             formula = form,
             data = data,
             start = starting_params,
-            weights = sample_weights # come from "data" object via the circacompare() and circa_single() functions
+            weights = sample_weights
           )
         },
         silent = args$suppress_all
