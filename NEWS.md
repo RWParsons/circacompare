@@ -1,12 +1,8 @@
-# circacompare 0.1.1.9001
+# circacompare 0.1.1.9000
 
 ## Improvements
 
 * support per-sample weights in `circacompare()`, `circa_single()`, `circa_single_mixed()` and `circacompare_mixed()`
-
-# circacompare 0.1.1.9000
-
-## Improvements
 
 * better error messages - also makes the shiny app more verbose for users
 
