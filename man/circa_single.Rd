@@ -13,7 +13,7 @@ circa_single(
   timeout_n = 10000,
   return_figure = TRUE,
   control = list(),
-  sample_weights = NULL,
+  weights = NULL,
   suppress_all = FALSE
 )
 }
@@ -34,7 +34,7 @@ circa_single(
 
 \item{control}{\code{list}. Used to control the parameterization of the model.}
 
-\item{sample_weights}{A numeric vector of per-sample weights to allow downweighting of outlier samples.}
+\item{weights}{A numeric vector of per-sample weights.}
 
 \item{suppress_all}{Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.}
 }
@@ -51,9 +51,8 @@ out <- circa_single(x = df, col_time = "time", col_outcome = "measure")
 out
 
 # with sample weights (arbitrary weights for demonstration)
-set.seed(1)
-sw <- jitter(rep(1, nrow(df)), factor=1.5)
-out2 <- circa_single(x = df, col_time = "time", col_outcome = "measure", sample_weights = sw, suppress_all = TRUE)
+sw <- runif(n=nrow(df))
+out2 <- circa_single(x = df, col_time = "time", col_outcome = "measure", weights = sw, suppress_all = TRUE)
 out2
 
 }

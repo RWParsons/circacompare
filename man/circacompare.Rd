@@ -13,7 +13,7 @@ circacompare(
   alpha_threshold = 0.05,
   timeout_n = 10000,
   control = list(),
-  sample_weights = NULL,
+  weights = NULL,
   suppress_all = FALSE
 )
 }
@@ -34,7 +34,7 @@ circacompare(
 
 \item{control}{\code{list}. Used to control the parameterization of the model.}
 
-\item{sample_weights}{A numeric vector of per-sample weights to allow downweighting of outlier samples.}
+\item{weights}{A numeric vector of per-sample weights to allow downweighting of outlier samples.}
 
 \item{suppress_all}{Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.}
 }
@@ -53,11 +53,10 @@ out <- circacompare(
 out
 
 # with sample weights (arbitrary weights for demonstration)
-set.seed(1)
-sw <- jitter(rep(1, nrow(df)), factor=2)
+sw <- runif(n=nrow(df))
 out2 <- circacompare(
   x = df, col_time = "time", col_group = "group",
-  col_outcome = "measure", sample_weights = sw
+  col_outcome = "measure", weights = sw
 )
 out2
 
