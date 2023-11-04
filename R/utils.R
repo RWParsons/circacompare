@@ -461,10 +461,10 @@ check_weights <-function(x, weights){
   if(len_weights != len_x)
     stop("weights must have the same length as the number of rows in x")
 
-  contains_na <- sum(is.na(weights)) > 0
+  contains_na_or_negative <- sum(is.na(weights) | weights < 0) > 0
   non_numeric <- !is.numeric(weights)
 
-  if(contains_na | non_numeric)
+  if(contains_na_or_negative | non_numeric)
     stop("weights be not be negative or contain NAs/missing values")
 
 }
