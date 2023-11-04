@@ -2,7 +2,7 @@
 
 ## Improvements
 
-* allow per-sample weights in `circacompare()` and `circa_single()`. This allows to downweight individual samples, for example in the case of outliers rather than hard-filtered them which reduces power. Such per-sample weights can reproducibly be estimated using approaches such as `arrayWeights()` in the [limma](https://bioconductor.org/packages/release/bioc/html/limma.html) package for datasets with many genes/observations, such as RNA-seq or microarrays.
+* support per-sample weights in `circacompare()`, `circa_single()`, `circa_single_mixed()` and `circacompare_mixed()`
 
 # circacompare 0.1.1.9000
 
