@@ -92,9 +92,14 @@ test_that("weights work", {
   # weights must be same length as nrow(x)
   sw2 <- c(sw, 1)
   expect_error(
-    circa_single_mixed(
-      x = df, col_time = "time", col_outcome = "measure",
-      col_id = "id", randomeffects = c("k"), weights = sw2
+    circacompare_mixed(
+      x = df,
+      col_time = "time",
+      col_group = "group",
+      col_outcome = "measure",
+      col_id = "id",
+      control = list(grouped_params = c("phi"), random_params = c("phi1")),
+      weights = sw2
     )
   )
 
