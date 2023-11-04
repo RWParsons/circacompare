@@ -18,8 +18,6 @@ model_each_group <- function(data, type, form = stats::as.formula("measure~k+alp
   success <- FALSE
   n <- 0
 
-  if(!"weights" %in% colnames(data)) data$weights <- rep(1, nrow(data))
-
   while (!success) {
     starting_params <- start_list(outcome = data$measure, controlVals = controlVals)
     # use the nls function below if the only random effects are on group parameters
@@ -38,7 +36,8 @@ model_each_group <- function(data, type, form = stats::as.formula("measure~k+alp
             start = unlist(starting_params),
             method = args$nlme_method,
             control = args$nlme_control,
-            verbose = args$verbose
+            verbose = args$verbose,
+            weights = nlme::varPower(form=~weights)
           )
         },
         silent = ifelse(args$verbose, FALSE, TRUE)
