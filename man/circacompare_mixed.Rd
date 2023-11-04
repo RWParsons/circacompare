@@ -15,6 +15,7 @@ circacompare_mixed(
   alpha_threshold = 0.05,
   nlme_control = list(),
   nlme_method = "REML",
+  weights = NULL,
   suppress_all = FALSE,
   timeout_n = 10000,
   control = list()
@@ -40,6 +41,8 @@ circacompare_mixed(
 \item{nlme_control}{A list of control values for the estimation algorithm to replace the default values returned by the function nlme::nlmeControl. Defaults to an empty list.}
 
 \item{nlme_method}{A character string. If "REML" the model is fit by maximizing the restricted log-likelihood. If "ML" the log-likelihood is maximized. Defaults to "REML".}
+
+\item{weights}{A numeric vector of per-sample weights, internally passed to \code{nlme::nlme()} via \code{nlme::varPower()}.}
 
 \item{suppress_all}{Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}. If \code{FALSE}, also runs \code{nlme()} with \code{verbose = TRUE}.}
 
@@ -81,6 +84,17 @@ out <- circacompare_mixed(
   col_id = "id",
   control = list(grouped_params = c("phi"), random_params = c("phi1"))
 )
-out
+
+# with sample weights (arbitrary weights for demonstration)
+sw <- runif(n=nrow(df))
+out2 <- circacompare_mixed(
+  x = df,
+  col_time = "time",
+  col_group = "group",
+  col_outcome = "measure",
+  col_id = "id",
+  control = list(grouped_params = c("phi"), random_params = c("phi1")),
+  weights = sw
+)
 
 }
