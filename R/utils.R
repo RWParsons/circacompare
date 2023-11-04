@@ -18,8 +18,8 @@ model_each_group <- function(data, type, form = stats::as.formula("measure~k+alp
   success <- FALSE
   n <- 0
 
-  if(!"sample_weights" %in% colnames(data)) data$sample_weights <- rep(1, nrow(data))
-    
+  if(!"weights" %in% colnames(data)) data$weights <- rep(1, nrow(data))
+
   while (!success) {
     starting_params <- start_list(outcome = data$measure, controlVals = controlVals)
     # use the nls function below if the only random effects are on group parameters
@@ -50,7 +50,7 @@ model_each_group <- function(data, type, form = stats::as.formula("measure~k+alp
             formula = form,
             data = data,
             start = starting_params,
-            weights = sample_weights
+            weights = weights
           )
         },
         silent = args$suppress_all
@@ -452,4 +452,20 @@ circa_summary <- function(model, period, control,
   }
 
   return(res)
+}
+
+check_weights <-function(x, weights){
+
+  len_weights <- length(weights)
+  len_x <- nrow(x)
+
+  if(len_weights != len_x)
+    stop("weights must have the same length as the number of rows in x")
+
+  contains_na <- sum(is.na(weights)) > 0
+  non_numeric <- !is.numeric(weights)
+
+  if(contains_na | non_numeric)
+    stop("weights be not be negative or contain NAs/missing values")
+
 }
