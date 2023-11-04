@@ -11,7 +11,7 @@
 #' @param alpha_threshold The level of alpha for which the presence of rhythmicity is considered. Default is 0.05.
 #' @param timeout_n The upper limit for the model fitting attempts. Default is 10,000.
 #' @param control \code{list}. Used to control the parameterization of the model.
-#' @param weights A numeric vector of per-sample weights to allow downweighting of outlier samples.
+#' @param weights An optional numeric vector of (fixed) weights. When present, the objective function is weighted least squares.
 #' @param suppress_all Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.
 #'
 #' @return list

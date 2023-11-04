@@ -34,7 +34,7 @@ circacompare(
 
 \item{control}{\code{list}. Used to control the parameterization of the model.}
 
-\item{weights}{A numeric vector of per-sample weights to allow downweighting of outlier samples.}
+\item{weights}{An optional numeric vector of (fixed) weights. When present, the objective function is weighted least squares.}
 
 \item{suppress_all}{Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.}
 }
