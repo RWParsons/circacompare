@@ -52,7 +52,13 @@ out
 
 # with sample weights (arbitrary weights for demonstration)
 sw <- runif(n=nrow(df))
-out2 <- circa_single(x = df, col_time = "time", col_outcome = "measure", weights = sw, suppress_all = TRUE)
+out2 <- circa_single(
+  x = df,
+  col_time = "time",
+   col_outcome = "measure",
+   weights = sw,
+   suppress_all = TRUE
+)
 out2
 
 }

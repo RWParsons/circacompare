@@ -1,4 +1,6 @@
-utils::globalVariables(c("time", "measure", "group", "eq", "eq_1", "eq_2"))
+utils::globalVariables(
+  c("time", "measure", "group", "eq", "eq_1", "eq_2", "weights")
+)
 
 extract_model_coefs <- function(model) {
   if ("nls" %in% class(model)) {
