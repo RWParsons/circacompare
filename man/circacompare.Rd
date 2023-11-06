@@ -53,7 +53,7 @@ out <- circacompare(
 out
 
 # with sample weights (arbitrary weights for demonstration)
-sw <- runif(n=nrow(df))
+sw <- runif(n = nrow(df))
 out2 <- circacompare(
   x = df, col_time = "time", col_group = "group",
   col_outcome = "measure", weights = sw

@@ -43,34 +43,33 @@ test_that("circa_single_mixed() works", {
 
 ### make test that weights are used correctly and malformatted weights are detected
 test_that("weights work", {
-
   set.seed(42)
   mixed_data <- function(n) {
-   counter <- 1
-   for (i in 1:n) {
-     x <- make_data(k1 = rnorm(1, 10, 2), alpha1 = 0, phi1 = 0)
-     x$id <- counter
-     counter <- counter + 1
-     if (i == 1) {
-       res <- x
-     } else {
-       res <- rbind(res, x)
-     }
-   }
-   return(res)
+    counter <- 1
+    for (i in 1:n) {
+      x <- make_data(k1 = rnorm(1, 10, 2), alpha1 = 0, phi1 = 0)
+      x$id <- counter
+      counter <- counter + 1
+      if (i == 1) {
+        res <- x
+      } else {
+        res <- rbind(res, x)
+      }
+    }
+    return(res)
   }
 
   df <- mixed_data(n = 50)
 
   # no weights used (= all weights are 1), hence fit$apVar should not be populated
   out <- circa_single_mixed(
-   x = df, col_time = "time", col_outcome = "measure",
-   col_id = "id", randomeffects = c("k")
+    x = df, col_time = "time", col_outcome = "measure",
+    col_id = "id", randomeffects = c("k")
   )
   expect_true(is(out$fit$apVar, "character"))
 
   # when weights are not all 1 then fit$apVar should be a matrix
-  sw <- runif(n=nrow(df))
+  sw <- runif(n = nrow(df))
   out2 <- circa_single_mixed(
     x = df, col_time = "time", col_outcome = "measure",
     col_id = "id", randomeffects = c("k"), weights = sw
@@ -105,5 +104,4 @@ test_that("weights work", {
       col_id = "id", randomeffects = c("k"), weights = sw4
     )
   )
-
 })

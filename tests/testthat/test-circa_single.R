@@ -103,14 +103,14 @@ test_that("weights work", {
 
   # all weights should be 1
   df <- make_data(phi1 = 6)
-  df <- df[df$group == "g1",]
+  df <- df[df$group == "g1", ]
   out <- circa_single(
     x = df, col_time = "time", col_outcome = "measure"
   )
   expect_true(all(out$fit$weights == 1))
 
   # all weights should not be 1
-  sw <- runif(n=nrow(df))
+  sw <- runif(n = nrow(df))
   out2 <- circa_single(
     x = df, col_time = "time", col_outcome = "measure", weights = sw
   )
@@ -141,5 +141,4 @@ test_that("weights work", {
       x = df, col_time = "time", col_outcome = "measure", weights = sw4, timeout_n = 1
     )
   )
-
 })

@@ -45,7 +45,7 @@
 #' )
 #'
 #' # with sample weights (arbitrary weights for demonstration)
-#' sw <- runif(n=nrow(df))
+#' sw <- runif(n = nrow(df))
 #' out2 <- circa_single_mixed(
 #'   x = df, col_time = "time", col_outcome = "measure",
 #'   col_id = "id", randomeffects = c("k"), weights = sw
@@ -135,10 +135,12 @@ circa_single_mixed <- function(x,
     }
   }
 
-  if(!is.null(weights)){
+  if (!is.null(weights)) {
     check_weights(x, weights)
     x$weights <- weights
-  } else x$weights <- rep(1, nrow(x))
+  } else {
+    x$weights <- rep(1, nrow(x))
+  }
 
   success <- FALSE
   n <- 0
@@ -158,7 +160,7 @@ circa_single_mixed <- function(x,
           control = nlme_control,
           method = nlme_method,
           verbose = !suppress_all,
-          weights = nlme::varPower(form=~weights)
+          weights = nlme::varPower(form = ~weights)
         )
       },
       silent = ifelse(suppress_all, TRUE, FALSE)

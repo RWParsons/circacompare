@@ -66,7 +66,7 @@ test_that("weights work", {
   expect_true(all(out$fit$weights == 1))
 
   # all weights should not be 1
-  sw <- runif(n=nrow(df))
+  sw <- runif(n = nrow(df))
   out2 <- circacompare(
     x = df, col_time = "time", col_outcome = "measure", col_group = "group",
     weights = sw
@@ -90,5 +90,4 @@ test_that("weights work", {
       weights = sw3
     )
   )
-
 })

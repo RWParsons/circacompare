@@ -36,7 +36,6 @@ test_that("circacompare_mixed() works", {
 
 ### make test that weights are used correctly and malformatted weights are detected
 test_that("weights work", {
-
   set.seed(99)
   phi1_in <- 3.15
   mixed_data <- function(n) {
@@ -67,17 +66,17 @@ test_that("weights work", {
 
   # no weights used (= all weights are 1), hence fit$apVar should not be populated
   out <- circacompare_mixed(
-   x = df,
-   col_time = "time",
-   col_group = "group",
-   col_outcome = "measure",
-   col_id = "id",
-   control = list(grouped_params = c("phi"), random_params = c("phi1"))
+    x = df,
+    col_time = "time",
+    col_group = "group",
+    col_outcome = "measure",
+    col_id = "id",
+    control = list(grouped_params = c("phi"), random_params = c("phi1"))
   )
   expect_true(is(out$fit$apVar, "character"))
 
   # when weights are not all 1 then fit$apVar should be a matrix
-  sw <- runif(n=nrow(df))
+  sw <- runif(n = nrow(df))
   out2 <- circacompare_mixed(
     x = df,
     col_time = "time",
@@ -132,5 +131,4 @@ test_that("weights work", {
       weights = sw4
     )
   )
-
 })

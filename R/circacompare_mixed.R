@@ -52,7 +52,7 @@
 #' )
 #'
 #' # with sample weights (arbitrary weights for demonstration)
-#' sw <- runif(n=nrow(df))
+#' sw <- runif(n = nrow(df))
 #' out2 <- circacompare_mixed(
 #'   x = df,
 #'   col_time = "time",
@@ -151,10 +151,12 @@ circacompare_mixed <- function(x,
     }
   }
 
-  if(!is.null(weights)){
+  if (!is.null(weights)) {
     check_weights(x, weights)
     x$weights <- weights
-  } else x$weights <- rep(1, nrow(x))
+  } else {
+    x$weights <- rep(1, nrow(x))
+  }
 
   group_1_text <- levels(as.factor(x$group))[1]
   group_2_text <- levels(as.factor(x$group))[2]
@@ -230,7 +232,7 @@ circacompare_mixed <- function(x,
           method = nlme_method,
           control = nlme_control,
           verbose = !suppress_all,
-          weights = nlme::varPower(form=~weights)
+          weights = nlme::varPower(form = ~weights)
         )
       },
       silent = ifelse(suppress_all, TRUE, FALSE)

@@ -87,7 +87,7 @@ out <- circacompare_mixed(
 )
 
 # with sample weights (arbitrary weights for demonstration)
-sw <- runif(n=nrow(df))
+sw <- runif(n = nrow(df))
 out2 <- circacompare_mixed(
   x = df,
   col_time = "time",

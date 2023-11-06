@@ -24,13 +24,13 @@
 #' out
 #'
 #' # with sample weights (arbitrary weights for demonstration)
-#' sw <- runif(n=nrow(df))
+#' sw <- runif(n = nrow(df))
 #' out2 <- circa_single(
 #'   x = df,
 #'   col_time = "time",
-#'    col_outcome = "measure",
-#'    weights = sw,
-#'    suppress_all = TRUE
+#'   col_outcome = "measure",
+#'   weights = sw,
+#'   suppress_all = TRUE
 #' )
 #' out2
 #'
@@ -97,10 +97,12 @@ circa_single <- function(x,
     }
   }
 
-  if(!is.null(weights)){
+  if (!is.null(weights)) {
     check_weights(x, weights)
     x$weights <- weights
-  } else x$weights <- rep(1, nrow(x))
+  } else {
+    x$weights <- rep(1, nrow(x))
+  }
 
   success <- FALSE
   n <- 0

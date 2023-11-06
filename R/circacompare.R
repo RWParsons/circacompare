@@ -26,7 +26,7 @@
 #' out
 #'
 #' # with sample weights (arbitrary weights for demonstration)
-#' sw <- runif(n=nrow(df))
+#' sw <- runif(n = nrow(df))
 #' out2 <- circacompare(
 #'   x = df, col_time = "time", col_group = "group",
 #'   col_outcome = "measure", weights = sw
@@ -62,19 +62,19 @@ circacompare <- function(x,
 
   if (!class(x$time) %in% c("numeric", "integer")) {
     stop(paste("The time variable which you gave was a '",
-               class(x$time),
-               "' \nThis function expects time to be given as hours and be of class 'integer' or 'numeric'.",
-               "\nPlease convert the time variable in your dataframe to be of one of these classes",
-               sep = ""
+      class(x$time),
+      "' \nThis function expects time to be given as hours and be of class 'integer' or 'numeric'.",
+      "\nPlease convert the time variable in your dataframe to be of one of these classes",
+      sep = ""
     ))
   }
 
   if (!class(x$measure) %in% c("numeric", "integer")) {
     stop(paste("The measure variable which you gave was a '",
-               class(x$measure),
-               "' \nThis function expects measure to be number and be of class 'integer' or 'numeric'.",
-               "\nPlease convert the measure variable in your dataframe to be of one of these classes",
-               sep = ""
+      class(x$measure),
+      "' \nThis function expects measure to be number and be of class 'integer' or 'numeric'.",
+      "\nPlease convert the measure variable in your dataframe to be of one of these classes",
+      sep = ""
     ))
   }
 
@@ -102,10 +102,12 @@ circacompare <- function(x,
     }
   }
 
-  if(!is.null(weights)){
+  if (!is.null(weights)) {
     check_weights(x, weights)
     x$weights <- weights
-  } else x$weights <- rep(1, nrow(x))
+  } else {
+    x$weights <- rep(1, nrow(x))
+  }
 
   group_1_text <- levels(as.factor(x$group))[1]
   group_2_text <- levels(as.factor(x$group))[2]

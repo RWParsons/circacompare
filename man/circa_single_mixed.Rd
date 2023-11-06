@@ -80,7 +80,7 @@ out <- circa_single_mixed(
 )
 
 # with sample weights (arbitrary weights for demonstration)
-sw <- runif(n=nrow(df))
+sw <- runif(n = nrow(df))
 out2 <- circa_single_mixed(
   x = df, col_time = "time", col_outcome = "measure",
   col_id = "id", randomeffects = c("k"), weights = sw
