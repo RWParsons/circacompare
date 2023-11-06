@@ -2,6 +2,8 @@
 
 ## Improvements
 
+* support per-sample weights in `circacompare()`, `circa_single()`, `circa_single_mixed()` and `circacompare_mixed()`
+
 * better error messages - also makes the shiny app more verbose for users
 
 * allow the user to use `suppress_all` argument to show/hide messages during model fitting across all circacompare functions.

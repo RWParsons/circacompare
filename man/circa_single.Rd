@@ -13,6 +13,7 @@ circa_single(
   timeout_n = 10000,
   return_figure = TRUE,
   control = list(),
+  weights = NULL,
   suppress_all = FALSE
 )
 }
@@ -33,6 +34,8 @@ circa_single(
 
 \item{control}{\code{list}. Used to control the parameterization of the model.}
 
+\item{weights}{An optional numeric vector of (fixed) weights. When present, the objective function is weighted least squares.}
+
 \item{suppress_all}{Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.}
 }
 \value{
@@ -44,5 +47,18 @@ list
 \examples{
 df <- make_data()
 df <- df[df$group == "g1", ]
-circa_single(x = df, col_time = "time", col_outcome = "measure")
+out <- circa_single(x = df, col_time = "time", col_outcome = "measure")
+out
+
+# with sample weights (arbitrary weights for demonstration)
+sw <- runif(n = nrow(df))
+out2 <- circa_single(
+  x = df,
+  col_time = "time",
+  col_outcome = "measure",
+  weights = sw,
+  suppress_all = TRUE
+)
+out2
+
 }

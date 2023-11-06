@@ -2,11 +2,15 @@ Package: circacompare
 Title: Analyses of Circadian Data
 Version: 0.1.1.9000
 Authors@R: 
-    person(given = "Rex",
-           family = "Parsons",
-           role = c("aut", "cre"),
-           email = "Rex.Parsons94@gmail.com",
-           comment = c(ORCID = "0000-0002-6053-8174"))
+    c(person(given = "Rex",
+             family = "Parsons",
+             role = c("aut", "cre"),
+             email = "Rex.Parsons94@gmail.com",
+             comment = c(ORCID = "0000-0002-6053-8174")),
+       person(given = "Alexander",
+              family = "Bender",
+              role = c("ctb"),
+              email = "atpoint90@gmail.com"))
 Description: Uses non-linear regression to statistically compare two circadian rhythms.
     Groups are only compared if both are rhythmic (amplitude is non-zero).
     Performs analyses regarding mesor, phase, and amplitude, reporting on estimates and statistical differences, for each, between groups.
@@ -14,7 +18,7 @@ Description: Uses non-linear regression to statistically compare two circadian r
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 Imports: 
     ggplot2 (>= 2.2.1),
     stats

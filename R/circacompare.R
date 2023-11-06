@@ -11,6 +11,7 @@
 #' @param alpha_threshold The level of alpha for which the presence of rhythmicity is considered. Default is 0.05.
 #' @param timeout_n The upper limit for the model fitting attempts. Default is 10,000.
 #' @param control \code{list}. Used to control the parameterization of the model.
+#' @param weights An optional numeric vector of (fixed) weights. When present, the objective function is weighted least squares.
 #' @param suppress_all Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.
 #'
 #' @return list
@@ -23,6 +24,15 @@
 #'   col_outcome = "measure"
 #' )
 #' out
+#'
+#' # with sample weights (arbitrary weights for demonstration)
+#' sw <- runif(n = nrow(df))
+#' out2 <- circacompare(
+#'   x = df, col_time = "time", col_group = "group",
+#'   col_outcome = "measure", weights = sw
+#' )
+#' out2
+#'
 circacompare <- function(x,
                          col_time,
                          col_group,
@@ -31,6 +41,7 @@ circacompare <- function(x,
                          alpha_threshold = 0.05,
                          timeout_n = 10000,
                          control = list(),
+                         weights = NULL,
                          suppress_all = FALSE) {
   controlVals <- circacompare_control()
   controlVals[names(control)] <- control
@@ -91,6 +102,13 @@ circacompare <- function(x,
     }
   }
 
+  if (!is.null(weights)) {
+    check_weights(x, weights)
+    x$weights <- weights
+  } else {
+    x$weights <- rep(1, nrow(x))
+  }
+
   group_1_text <- levels(as.factor(x$group))[1]
   group_2_text <- levels(as.factor(x$group))[2]
   x$x_group <- ifelse(x$group == group_1_text, 0, 1)
@@ -149,7 +167,8 @@ circacompare <- function(x,
           formula = form_group,
           data = x,
           start = start_list_grouped(g1 = g1_model$model, g2 = g2_model$model, grouped_params = controlVals$grouped_params),
-          control = stats::nls.control(maxiter = 100, minFactor = 1 / 10000)
+          control = stats::nls.control(maxiter = 100, minFactor = 1 / 10000),
+          weights = weights
         )
       },
       silent = suppress_all

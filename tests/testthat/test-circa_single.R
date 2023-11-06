@@ -97,3 +97,48 @@ test_that("suppress_all works", {
   )
   expect_true(length(output) == 0)
 })
+
+### make test that weights are used correctly and malformatted weights are detected
+test_that("weights work", {
+
+  # all weights should be 1
+  df <- make_data(phi1 = 6)
+  df <- df[df$group == "g1", ]
+  out <- circa_single(
+    x = df, col_time = "time", col_outcome = "measure"
+  )
+  expect_true(all(out$fit$weights == 1))
+
+  # all weights should not be 1
+  sw <- runif(n = nrow(df))
+  out2 <- circa_single(
+    x = df, col_time = "time", col_outcome = "measure", weights = sw
+  )
+  expect_false(all(out2$fit$weights == 1))
+
+  # weights must be same length as nrow(x)
+  sw2 <- c(sw, 1)
+  expect_error(
+    circa_single(
+      x = df, col_time = "time", col_outcome = "measure", weights = sw2
+    )
+  )
+
+  # weights must not contain NA
+  sw3 <- sw
+  sw3[1] <- NA
+  expect_error(
+    circa_single(
+      x = df, col_time = "time", col_outcome = "measure", weights = sw3
+    )
+  )
+
+  # weights must not be negative
+  sw4 <- sw
+  sw4[1] <- -1
+  expect_error(
+    circa_single(
+      x = df, col_time = "time", col_outcome = "measure", weights = sw4, timeout_n = 1
+    )
+  )
+})

@@ -11,6 +11,7 @@
 #' @param timeout_n The upper limit for the model fitting attempts. Default is 10,000.
 #' @param return_figure Whether or not to return a ggplot graph of the rhythm and cosine model.
 #' @param control \code{list}. Used to control the parameterization of the model.
+#' @param weights An optional numeric vector of (fixed) weights. When present, the objective function is weighted least squares.
 #' @param suppress_all Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}.
 #'
 #' @return list
@@ -19,7 +20,20 @@
 #' @examples
 #' df <- make_data()
 #' df <- df[df$group == "g1", ]
-#' circa_single(x = df, col_time = "time", col_outcome = "measure")
+#' out <- circa_single(x = df, col_time = "time", col_outcome = "measure")
+#' out
+#'
+#' # with sample weights (arbitrary weights for demonstration)
+#' sw <- runif(n = nrow(df))
+#' out2 <- circa_single(
+#'   x = df,
+#'   col_time = "time",
+#'   col_outcome = "measure",
+#'   weights = sw,
+#'   suppress_all = TRUE
+#' )
+#' out2
+#'
 circa_single <- function(x,
                          col_time,
                          col_outcome,
@@ -28,6 +42,7 @@ circa_single <- function(x,
                          timeout_n = 10000,
                          return_figure = TRUE,
                          control = list(),
+                         weights = NULL,
                          suppress_all = FALSE) {
   controlVals <- circa_single_control()
   controlVals[names(control)] <- control
@@ -81,6 +96,14 @@ circa_single <- function(x,
       ))
     }
   }
+
+  if (!is.null(weights)) {
+    check_weights(x, weights)
+    x$weights <- weights
+  } else {
+    x$weights <- rep(1, nrow(x))
+  }
+
   success <- FALSE
   n <- 0
   form <- create_formula(main_params = controlVals$main_params, decay_params = controlVals$decay_params)$formula
@@ -91,7 +114,8 @@ circa_single <- function(x,
         stats::nls(
           formula = form,
           data = x,
-          start = start_list(outcome = x$measure, controlVals = controlVals)
+          start = start_list(outcome = x$measure, controlVals = controlVals),
+          weights = weights
         )
       },
       silent = suppress_all

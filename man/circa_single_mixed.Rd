@@ -14,6 +14,7 @@ circa_single_mixed(
   alpha_threshold = 0.05,
   nlme_control = list(),
   nlme_method = "ML",
+  weights = NULL,
   suppress_all = FALSE,
   timeout_n = 10000,
   return_figure = TRUE,
@@ -38,6 +39,9 @@ circa_single_mixed(
 \item{nlme_control}{A list of control values for the estimation algorithm to replace the default values returned by the function nlme::nlmeControl. Defaults to an empty list.}
 
 \item{nlme_method}{A character string. If "REML" the model is fit by maximizing the restricted log-likelihood. If "ML" the log-likelihood is maximized. Defaults to "ML".}
+
+\item{weights}{An optional numeric vector of (fixed) weights internally passed to \code{nlme::nlme()} via \code{nlme::varPower()}.
+When present, the objective function is weighted least squares.}
 
 \item{suppress_all}{Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}. If \code{FALSE}, also runs \code{nlme()} with \code{verbose = TRUE}.}
 
@@ -74,4 +78,12 @@ out <- circa_single_mixed(
   x = df, col_time = "time", col_outcome = "measure",
   col_id = "id", randomeffects = c("k")
 )
+
+# with sample weights (arbitrary weights for demonstration)
+sw <- runif(n = nrow(df))
+out2 <- circa_single_mixed(
+  x = df, col_time = "time", col_outcome = "measure",
+  col_id = "id", randomeffects = c("k"), weights = sw
+)
+
 }

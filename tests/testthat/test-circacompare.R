@@ -54,3 +54,40 @@ test_that("circacompare() fits a good model to generated data", {
   alpha_decay1_ul <- alpha_decay1_est + 1.96 * fit_alpha_decay1["std_error"]
   expect_true(alpha_decay1_in < alpha_decay1_ul & alpha_decay1_in > alpha_decay1_ll)
 })
+
+### make test that weights are used correctly and malformatted weights are detected
+test_that("weights work", {
+
+  # all weights should be 1
+  df <- make_data(phi1 = 6)
+  out <- circacompare(
+    x = df, col_time = "time", col_outcome = "measure", col_group = "group"
+  )
+  expect_true(all(out$fit$weights == 1))
+
+  # all weights should not be 1
+  sw <- runif(n = nrow(df))
+  out2 <- circacompare(
+    x = df, col_time = "time", col_outcome = "measure", col_group = "group",
+    weights = sw
+  )
+  expect_false(all(out2$fit$weights == 1))
+
+  # weights must be same length as nrow(x)
+  sw2 <- c(sw, 1)
+  expect_error(
+    circacompare(
+      x = df, col_time = "time", col_outcome = "measure", col_group = "group",
+      weights = sw2
+    )
+  )
+
+  sw3 <- sw
+  sw3[1] <- NA
+  expect_error(
+    circacompare(
+      x = df, col_time = "time", col_outcome = "measure", col_group = "group",
+      weights = sw3
+    )
+  )
+})

@@ -13,6 +13,8 @@
 #' @param alpha_threshold The level of alpha for which the presence of rhythmicity is considered. Default is to \code{0.05}.
 #' @param nlme_control A list of control values for the estimation algorithm to replace the default values returned by the function nlme::nlmeControl. Defaults to an empty list.
 #' @param nlme_method A character string. If "REML" the model is fit by maximizing the restricted log-likelihood. If "ML" the log-likelihood is maximized. Defaults to "REML".
+#' @param weights An optional numeric vector of (fixed) weights internally passed to \code{nlme::nlme()} via \code{nlme::varPower()}.
+#' When present, the objective function is weighted least squares.
 #' @param suppress_all Logical. Set to \code{TRUE} to avoid seeing errors or messages during model fitting procedure. Default is \code{FALSE}. If \code{FALSE}, also runs \code{nlme()} with \code{verbose = TRUE}.
 #' @param timeout_n The upper limit for the model fitting attempts. Default is \code{10000}.
 #' @param control \code{list}. Used to control the parameterization of the model.
@@ -48,7 +50,18 @@
 #'   col_id = "id",
 #'   control = list(grouped_params = c("phi"), random_params = c("phi1"))
 #' )
-#' out
+#'
+#' # with sample weights (arbitrary weights for demonstration)
+#' sw <- runif(n = nrow(df))
+#' out2 <- circacompare_mixed(
+#'   x = df,
+#'   col_time = "time",
+#'   col_group = "group",
+#'   col_outcome = "measure",
+#'   col_id = "id",
+#'   control = list(grouped_params = c("phi"), random_params = c("phi1")),
+#'   weights = sw
+#' )
 #'
 circacompare_mixed <- function(x,
                                col_time,
@@ -60,6 +73,7 @@ circacompare_mixed <- function(x,
                                alpha_threshold = 0.05,
                                nlme_control = list(),
                                nlme_method = "REML",
+                               weights = NULL,
                                suppress_all = FALSE,
                                timeout_n = 10000,
                                control = list()) {
@@ -137,6 +151,13 @@ circacompare_mixed <- function(x,
     }
   }
 
+  if (!is.null(weights)) {
+    check_weights(x, weights)
+    x$weights <- weights
+  } else {
+    x$weights <- rep(1, nrow(x))
+  }
+
   group_1_text <- levels(as.factor(x$group))[1]
   group_2_text <- levels(as.factor(x$group))[2]
 
@@ -210,7 +231,8 @@ circacompare_mixed <- function(x,
           start = unlist(start_list_grouped(g1 = g1_model$model, g2 = g2_model$model, grouped_params = controlVals$grouped_params)),
           method = nlme_method,
           control = nlme_control,
-          verbose = !suppress_all
+          verbose = !suppress_all,
+          weights = nlme::varPower(form = ~weights)
         )
       },
       silent = ifelse(suppress_all, TRUE, FALSE)

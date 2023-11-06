@@ -1,4 +1,6 @@
-utils::globalVariables(c("time", "measure", "group", "eq", "eq_1", "eq_2"))
+utils::globalVariables(
+  c("time", "measure", "group", "eq", "eq_1", "eq_2", "weights")
+)
 
 extract_model_coefs <- function(model) {
   if ("nls" %in% class(model)) {
@@ -36,7 +38,8 @@ model_each_group <- function(data, type, form = stats::as.formula("measure~k+alp
             start = unlist(starting_params),
             method = args$nlme_method,
             control = args$nlme_control,
-            verbose = args$verbose
+            verbose = args$verbose,
+            weights = nlme::varPower(form = ~weights)
           )
         },
         silent = ifelse(args$verbose, FALSE, TRUE)
@@ -47,7 +50,8 @@ model_each_group <- function(data, type, form = stats::as.formula("measure~k+alp
           stats::nls(
             formula = form,
             data = data,
-            start = starting_params
+            start = starting_params,
+            weights = weights
           )
         },
         silent = args$suppress_all
@@ -449,4 +453,20 @@ circa_summary <- function(model, period, control,
   }
 
   return(res)
+}
+
+check_weights <- function(x, weights) {
+  len_weights <- length(weights)
+  len_x <- nrow(x)
+
+  if (len_weights != len_x) {
+    stop("weights must have the same length as the number of rows in x")
+  }
+
+  contains_na_or_negative <- sum(is.na(weights) | weights < 0) > 0
+  non_numeric <- !is.numeric(weights)
+
+  if (contains_na_or_negative | non_numeric) {
+    stop("weights be not be negative or contain NAs/missing values")
+  }
 }
