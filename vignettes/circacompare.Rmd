@@ -1,8 +1,8 @@
 ---
-title: "Introduction to circacompare"
+title: "circacompare"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{circacompare-vignette}
+  %\VignetteIndexEntry{circacompare}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -2,6 +2,8 @@
 
 ## Improvements
 
+* create website for circacompare with pkgdown.
+
 * support per-sample weights in `circacompare()`, `circa_single()`, `circa_single_mixed()` and `circacompare_mixed()`
 
 * better error messages - also makes the shiny app more verbose for users
