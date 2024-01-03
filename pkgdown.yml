@@ -1,0 +1,10 @@
+pandoc: 2.19.2
+pkgdown: 2.0.7
+pkgdown_sha: ~
+articles:
+  circacompare-vignette: circacompare-vignette.html
+last_built: 2024-01-03T22:38Z
+urls:
+  reference: https://rwparsons.github.io/circacompare/reference
+  article: https://rwparsons.github.io/circacompare/articles
+
