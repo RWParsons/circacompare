@@ -24,6 +24,7 @@
 #'
 #' @examples
 #' # Generate some data with within-id correlation for phase-shift (phi1)
+#' \donttest{
 #' set.seed(99)
 #' phi1_in <- 3.15
 #'
@@ -62,6 +63,7 @@
 #'   control = list(grouped_params = c("phi"), random_params = c("phi1")),
 #'   weights = sw
 #' )
+#' }
 #'
 circacompare_mixed <- function(x,
                                col_time,
@@ -265,8 +267,8 @@ circacompare_mixed <- function(x,
   eval(parse(text = eq_expression$g2))
 
   fig_out <- ggplot2::ggplot(x, ggplot2::aes(time, measure)) +
-    ggplot2::stat_function(ggplot2::aes(colour = group_1_text), fun = eq_1, size = 1) +
-    ggplot2::stat_function(ggplot2::aes(colour = group_2_text), fun = eq_2, size = 1) +
+    ggplot2::stat_function(ggplot2::aes(colour = group_1_text), fun = eq_1, linewidth = 1) +
+    ggplot2::stat_function(ggplot2::aes(colour = group_2_text), fun = eq_2, linewidth = 1) +
     ggplot2::geom_point(ggplot2::aes(colour = group)) +
     ggplot2::scale_colour_manual(
       breaks = c(group_1_text, group_2_text),

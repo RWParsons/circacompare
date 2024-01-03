@@ -23,6 +23,7 @@
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' set.seed(42)
 #' mixed_data <- function(n) {
 #'   counter <- 1
@@ -50,7 +51,7 @@
 #'   x = df, col_time = "time", col_outcome = "measure",
 #'   col_id = "id", randomeffects = c("k"), weights = sw
 #' )
-#'
+#' }
 circa_single_mixed <- function(x,
                                col_time,
                                col_outcome,
@@ -190,7 +191,7 @@ circa_single_mixed <- function(x,
   if (return_figure) {
     if (data_rhythmic) {
       fig_out <- ggplot2::ggplot(x, ggplot2::aes(time, measure)) +
-        ggplot2::stat_function(fun = eq, size = 1) +
+        ggplot2::stat_function(fun = eq, linewidth = 1) +
         ggplot2::geom_point() +
         ggplot2::xlim(
           min(floor(x$time / period) * period),

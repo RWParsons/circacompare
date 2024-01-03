@@ -58,6 +58,7 @@ list
 \code{circa_single_mixed} is similar to \code{circa_single} but allows for some simple, user-specified random-effects on the rhythmic parameters of choice.
 }
 \examples{
+\donttest{
 set.seed(42)
 mixed_data <- function(n) {
   counter <- 1
@@ -85,5 +86,5 @@ out2 <- circa_single_mixed(
   x = df, col_time = "time", col_outcome = "measure",
   col_id = "id", randomeffects = c("k"), weights = sw
 )
-
+}
 }

@@ -151,7 +151,7 @@ circa_single <- function(x,
       )
     if (data_rhythmic) {
       fig_out <- p +
-        ggplot2::stat_function(fun = eq, size = 1) +
+        ggplot2::stat_function(fun = eq, linewidth = 1) +
         ggplot2::labs(subtitle = "Data is rhythmic", x = "time (hours)")
     } else {
       fig_out <- p +

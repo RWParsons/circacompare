@@ -199,8 +199,8 @@ circacompare <- function(x,
   eval(parse(text = eq_expression$g2))
 
   fig_out <- ggplot2::ggplot(x, ggplot2::aes(time, measure)) +
-    ggplot2::stat_function(ggplot2::aes(colour = group_1_text), fun = eq_1, size = 1) +
-    ggplot2::stat_function(ggplot2::aes(colour = group_2_text), fun = eq_2, size = 1) +
+    ggplot2::stat_function(ggplot2::aes(colour = group_1_text), fun = eq_1, linewidth = 1) +
+    ggplot2::stat_function(ggplot2::aes(colour = group_2_text), fun = eq_2, linewidth = 1) +
     ggplot2::geom_point(ggplot2::aes(colour = group)) +
     ggplot2::scale_colour_manual(
       breaks = c(group_1_text, group_2_text),

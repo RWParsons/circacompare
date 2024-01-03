@@ -52,7 +52,6 @@ head(data_single)
 In the case that you have data from two groups and you're wishing to determine the differences in mesor, amplitude, or phase between them, you will need an additional column (with two possible values) representing the groups.
 
 ```{r}
-set.seed(42)
 data_grouped <- make_data(phi1 = 6, noise_sd = 1)
 head(data_grouped)
 tail(data_grouped)
@@ -169,8 +168,7 @@ If you have repeated measures data, then it may be inappropriate to use a standa
 
 Here, I have some data that has some simulated within-id correlation in terms of the amount of phase shift between groups. 
 
-```{r}
-set.seed(42)
+```{r, warning=FALSE, message=FALSE}
 phi1_in <- 3
 mixed_data <- function(n) {
   counter <- 1
@@ -194,7 +192,8 @@ out <- circacompare_mixed(
   col_outcome = "measure",
   col_id = "id",
   control = list(grouped_params = c("alpha", "phi"), random_params = c("phi1")),
-  period = 24
+  period = 24,
+  suppress_all = TRUE
 )
 
 ggplot(data = df[df$id %in% c(1:6), ], aes(time, measure)) +
@@ -253,7 +252,6 @@ This produces the following model:
 `measure~k+((alpha+alpha1*x_group)*exp(-(alpha_decay+alpha_decay1*x_group)*time_r))*cos((24/(tau))*time_r-(phi))`
 
 ```{r}
-set.seed(42)
 tau_in <- runif(1, 8, 20)
 alpha_decay1_in <- runif(1, 0.02, 0.05)
 

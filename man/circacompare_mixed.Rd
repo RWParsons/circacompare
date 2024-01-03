@@ -59,6 +59,7 @@ list
 }
 \examples{
 # Generate some data with within-id correlation for phase-shift (phi1)
+\donttest{
 set.seed(99)
 phi1_in <- 3.15
 
@@ -97,5 +98,6 @@ out2 <- circacompare_mixed(
   control = list(grouped_params = c("phi"), random_params = c("phi1")),
   weights = sw
 )
+}
 
 }

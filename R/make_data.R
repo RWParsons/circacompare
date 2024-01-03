@@ -20,7 +20,19 @@
 #' data <- make_data(k1 = 3, alpha1 = 4, phi1 = 6)
 make_data <- function(k = 0, k1 = 3, alpha = 10, alpha1 = 4, phi = 0, phi1 = 3.15, tau = 24, hours = 48, noise_sd = 0.1, seed = NULL) {
   if (!is.null(seed)) {
-    set.seed(seed)
+    withr::with_seed(seed, {
+      return(make_data(
+        k = k,
+        k1 = k1,
+        alpha = alpha,
+        alpha1 = alpha1,
+        phi = phi,
+        phi1 = phi1,
+        tau = tau,
+        hours = hours,
+        noise_sd = noise_sd
+      ))
+    })
   }
   g1 <- data.frame(
     time = rep(NA, hours),
