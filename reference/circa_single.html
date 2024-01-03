@@ -18,14 +18,11 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
+      <ul class="navbar-nav me-auto"><li class="nav-item">
+  <a class="nav-link" href="../articles/circacompare.html">Get started</a>
 </li>
-<li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/circacompare-vignette.html">Introduction to circacompare</a>
-  </div>
+<li class="active nav-item">
+  <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="nav-item">
   <a class="nav-link" href="../news/index.html">Changelog</a>
@@ -119,28 +116,26 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_data.html">make_data</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">[</span><span class="va">df</span><span class="op">$</span><span class="va">group</span> <span class="op">==</span> <span class="st">"g1"</span>, <span class="op">]</span></span></span>
 <span class="r-in"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">circa_single</span><span class="op">(</span>x <span class="op">=</span> <span class="va">df</span>, col_time <span class="op">=</span> <span class="st">"time"</span>, col_outcome <span class="op">=</span> <span class="st">"measure"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error in stats::nls(formula = form, data = x, start = start_list(outcome = x$measure,  : </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   step factor 0.000488281 reduced below 'minFactor' of 0.000976562</span>
 <span class="r-in"><span><span class="va">out</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fit</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Nonlinear regression model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   model: measure ~ k + (alpha) * cos((1/period) * time_r - (phi))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    data: x</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         k     alpha       phi </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.005305  9.997607  6.282388 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  residual sum-of-squares: 0.4548</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.013157 10.005189  0.002718 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  residual sum-of-squares: 0.572</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of iterations to convergence: 6 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Achieved convergence tolerance: 6.178e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Achieved convergence tolerance: 1.247e-06</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parameter         value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      rhythmic_p  2.094669e-85</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           mesor -5.304617e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       amplitude  9.997607e+00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   phase_radians  6.282388e+00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 peak_time_hours  2.399695e+01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6          period  2.400000e+01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         parameter        value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      rhythmic_p 3.526875e-83</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           mesor 1.315715e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       amplitude 1.000519e+01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   phase_radians 2.718091e-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 peak_time_hours 1.038234e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6          period 2.400000e+01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $plot</span>
 <span class="r-plt img"><img src="circa_single-1.png" alt="" width="700" height="433"></span>
@@ -160,21 +155,21 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> Nonlinear regression model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   model: measure ~ k + (alpha) * cos((1/period) * time_r - (phi))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    data: x</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        k    alpha      phi </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.01776  9.99622  6.28158 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  weighted residual sum-of-squares: 0.1958</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         k     alpha       phi </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.018173 10.026282  0.003437 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  weighted residual sum-of-squares: 0.2436</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Number of iterations to convergence: 8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Achieved convergence tolerance: 1.473e-07</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Number of iterations to convergence: 5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Achieved convergence tolerance: 2.062e-06</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parameter         value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      rhythmic_p  5.234639e-88</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           mesor -1.775707e-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       amplitude  9.996223e+00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   phase_radians  6.281576e+00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 peak_time_hours  2.399385e+01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6          period  2.400000e+01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         parameter        value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      rhythmic_p 9.849437e-84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           mesor 1.817299e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       amplitude 1.002628e+01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   phase_radians 3.436502e-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 peak_time_hours 1.312647e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6          period 2.400000e+01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $plot</span>
 <span class="r-plt img"><img src="circa_single-2.png" alt="" width="700" height="433"></span>
