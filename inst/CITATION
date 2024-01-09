@@ -1,7 +1,9 @@
 citHeader("To cite circacompare in publications use:")
 
-citEntry(entry = "Article",
-  title        = "CircaCompare: a method to estimate and statistically support differences in mesor, amplitude and phase, between circadian rhythms",
+bibentry(bibtype = "Article",
+  title        = paste("CircaCompare: a method to estimate and statistically",
+                       "support differences in mesor, amplitude and phase,",
+                       "between circadian rhythms"),
   author       = c(
                      person(given = "Rex", family = "Parsons"),
                      person(given = "Richard", family = "Parsons"),
