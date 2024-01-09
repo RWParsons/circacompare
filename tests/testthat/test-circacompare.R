@@ -62,7 +62,6 @@ test_that("circacompare() fits a good model to generated data", {
 
 ### make test that weights are used correctly and malformatted weights are detected
 test_that("weights work", {
-
   # all weights should be 1
   df <- make_data(phi1 = 6)
   out <- circacompare(

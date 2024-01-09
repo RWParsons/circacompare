@@ -124,5 +124,4 @@ test_that("weights work", {
 
   expect_true(is(out$fit$apVar, "character"))
   expect_true(is(out2$fit$apVar, "matrix"))
-
 })
