@@ -1,7 +1,12 @@
 ## Test environments
-* local R installation, R 4.0.3
-* ubuntu 16.04 (on travis-ci), R 4.0.3
-* win-builder (devel)
+
+* local R installation, R 4.3.0
+* GitHub workflow R-CMD-CHECK - standard
+  * windows-latest (release)
+  * macOS-latest (release)
+  * ubuntu-latest (devel)
+  * ubuntu-latest (release)
+  * ubuntu-latest (oldrel-1)
 
 ## R CMD check results
 
@@ -10,7 +15,5 @@
 R CMD check succeeded
 
 ## Release summary
-
-* This is the second release of this package to CRAN.
 
 * A NEWS.md file is included.

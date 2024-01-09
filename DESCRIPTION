@@ -1,6 +1,6 @@
 Package: circacompare
 Title: Analyses of Circadian Data
-Version: 0.1.1.9000
+Version: 0.2.0
 Authors@R: 
     c(person(given = "Rex",
              family = "Parsons",
@@ -31,3 +31,4 @@ Suggests:
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://rwparsons.github.io/circacompare/
+Language: en-US

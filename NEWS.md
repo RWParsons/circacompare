@@ -1,4 +1,4 @@
-# circacompare 0.1.1.9000
+# circacompare 0.2.0
 
 ## Improvements
 
