@@ -116,25 +116,27 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_data.html">make_data</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">[</span><span class="va">df</span><span class="op">$</span><span class="va">group</span> <span class="op">==</span> <span class="st">"g1"</span>, <span class="op">]</span></span></span>
 <span class="r-in"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">circa_single</span><span class="op">(</span>x <span class="op">=</span> <span class="va">df</span>, col_time <span class="op">=</span> <span class="st">"time"</span>, col_outcome <span class="op">=</span> <span class="st">"measure"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Error in stats::nls(formula = form, data = x, start = start_list(outcome = x$measure,  : </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   step factor 0.000488281 reduced below 'minFactor' of 0.000976562</span>
 <span class="r-in"><span><span class="va">out</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $fit</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Nonlinear regression model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   model: measure ~ k + (alpha) * cos((1/period) * time_r - (phi))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    data: x</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         k     alpha       phi </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.013157 10.005189  0.002718 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  residual sum-of-squares: 0.572</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      k  alpha    phi </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.0431 9.9677 6.2830 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  residual sum-of-squares: 0.5621</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Number of iterations to convergence: 6 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Achieved convergence tolerance: 1.247e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Number of iterations to convergence: 5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Achieved convergence tolerance: 1.933e-06</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summary</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         parameter        value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      rhythmic_p 3.526875e-83</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           mesor 1.315715e-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       amplitude 1.000519e+01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   phase_radians 2.718091e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 peak_time_hours 1.038234e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      rhythmic_p 2.818058e-83</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           mesor 4.310301e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       amplitude 9.967667e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   phase_radians 6.283007e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 peak_time_hours 2.399932e+01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6          period 2.400000e+01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $plot</span>
@@ -155,20 +157,20 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> Nonlinear regression model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   model: measure ~ k + (alpha) * cos((1/period) * time_r - (phi))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    data: x</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         k     alpha       phi </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.018173 10.026282  0.003437 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  weighted residual sum-of-squares: 0.2436</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        k    alpha      phi </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.04184 10.00381  6.28016 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  weighted residual sum-of-squares: 0.228</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Number of iterations to convergence: 5 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Achieved convergence tolerance: 2.062e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Number of iterations to convergence: 6 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Achieved convergence tolerance: 4.252e-09</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summary</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         parameter        value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      rhythmic_p 9.849437e-84</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           mesor 1.817299e-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       amplitude 1.002628e+01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   phase_radians 3.436502e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 peak_time_hours 1.312647e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      rhythmic_p 6.698591e-85</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           mesor 4.184142e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       amplitude 1.000381e+01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   phase_radians 6.280163e+00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 peak_time_hours 2.398846e+01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6          period 2.400000e+01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $plot</span>
