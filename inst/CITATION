@@ -2,11 +2,13 @@ citHeader("To cite circacompare in publications use:")
 
 citEntry(entry = "Article",
   title        = "CircaCompare: a method to estimate and statistically support differences in mesor, amplitude and phase, between circadian rhythms",
-  author       = personList(as.person("Rex Parsons"),
-                   as.person("Richard Parsons"),
-                   as.person("Nicholas Garner"),
-                   as.person("Henrik Oster"),
-                   as.person("Oliver Rawashdeh")),
+  author       = c(
+                     person(given = "Rex", family = "Parsons"),
+                     person(given = "Richard", family = "Parsons"),
+                     person(given = "Nicholas", family = "Garner"),
+                     person(given = "Henrik", family = "Oster"),
+                     person(given = "Oliver", family = "Rawashdeh")
+                   ),
   journal      = "Bioinformatics",
   year         = "2020",
   volume       = "36",

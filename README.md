@@ -2,7 +2,7 @@
 [![DOI](https://img.shields.io/badge/doi-10.1093/bioinformatics/btz730-green.svg)](https://doi.org/10.1093/bioinformatics/btz730)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/last-month/circacompare)](https://www.r-pkg.org/pkg/circacompare)
 [![R-CMD-check](https://github.com/RWParsons/circacompare/workflows/R-CMD-check/badge.svg)](https://github.com/RWParsons/circacompare/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/mit/)
 <!-- badges: end -->
 
 # circacompare
