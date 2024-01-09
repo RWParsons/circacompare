@@ -1,6 +1,6 @@
 Package: circacompare
 Title: Analyses of Circadian Data
-Version: 0.2.0
+Version: 0.2.0.9000
 Authors@R: 
     c(person(given = "Rex",
              family = "Parsons",
